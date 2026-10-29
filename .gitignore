@@ -1,0 +1,48 @@
+# === İşletim sistemi artıkları ===
+# macOS Finder her klasörde bunu üretir, repoya girmemeli
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# === Repoya gönderilmeyen yerel dosyalar ===
+derle.py
+
+# === Python (derle.py çalışınca oluşur) ===
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# === Editör ve IDE ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# === Node (bu projede kullanılmıyor, yine de kazara eklenmesin) ===
+node_modules/
+package-lock.json
+
+# === Raporun ara çıktıları ===
+# rapor/rapor.tex ve rapor/rapor.pdf repoya GİRER, LaTeX çöpleri girmez
+rapor/*.aux
+rapor/*.log
+rapor/*.out
+rapor/*.toc
+rapor/*.synctex.gz
+rapor/*.fls
+rapor/*.fdb_latexmk
+rapor/*.bbl
+rapor/*.blg

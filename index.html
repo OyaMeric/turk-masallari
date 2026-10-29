@@ -1,0 +1,2136 @@
+<!DOCTYPE html>
+<html lang="tr" data-tema="acik">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Türk Masalları Derlemesi</title>
+<meta name="description" content="On Türk halk masalı, kaynaklarıyla birlikte, okumak için tek sayfada.">
+
+<style>
+/* ===========================================================================
+   1. DEĞİŞKENLER
+   Bütün renkler, boşluklar ve yazı boyutları burada tanımlı. Sayfanın hiçbir
+   yerinde doğrudan renk kodu yazılmaz; her zaman bu değişkenler kullanılır.
+   =========================================================================== */
+:root {
+  /* Renkler — kilim, çini ve tezhipten alındı */
+  --renk-zemin:   #f3ead9;  /* parşömen: okuma kolonunun zemini */
+  --renk-kagit:   #faf4e8;  /* bir ton açık kâğıt: öne çıkan yüzeyler */
+  --renk-metin:   #2a1f17;  /* koyu kahve: bütün gövde metni */
+  --renk-soluk:   #6b5a48;  /* ikincil notlar, kaynak künyesi */
+  --renk-saha:    #163a5f;  /* çini mavisi: sabit yarının alanı */
+  --renk-saha-ust:#1e4a76;  /* çini mavisinin bir ton açığı */
+  --renk-vurgu:   #8e2b2b;  /* bordo: tek eylem düğmesi ve bağlantılar */
+  --renk-hardal:  #8a5f14;  /* hardal: etiketler ve motif detayı */
+  --renk-secim:   #e4d4b4;  /* arama vurgusu ve metin seçimi */
+
+  /* Bir rengin ÜZERİNE gelen yazı için ayrı değişkenler.
+     Tema değişince zemin de yazı da birlikte değişsin diye. */
+  --renk-vurgu-yazi:  #ffffff;  /* bordo düğmenin üstündeki yazı */
+  --renk-vurgu-hover: #a33232;  /* bordo düğmenin üzerine gelince */
+  --renk-saha-yazi:   #f3ead9;  /* çini alanının üstündeki yazı ve motifler */
+
+  /* Boşluk ölçeği — hepsi 8px'in katları */
+  --bosluk-1: 8px;
+  --bosluk-2: 16px;
+  --bosluk-3: 24px;
+  --bosluk-4: 40px;
+  --bosluk-5: 64px;
+  --bosluk-6: 96px;
+  --bosluk-7: 144px;   /* bölümler arası boşluk */
+
+  /* Tek yazı tipi: sistemde hazır bulunan serif yığını.
+     Harici font yüklenmediği için yalnızca kurulu yazı tipleri kullanılır. */
+  --yazi: Georgia, "Palatino Linotype", "Book Antiqua", "Times New Roman", serif;
+
+  /* Altı yazı boyutu adımı, fazlası yok. Sayfada başka boyut kullanılmaz. */
+  --tip-kucuk:  clamp(0.875rem, 0.85rem + 0.1vw, 0.9375rem);  /* etiket, künye  */
+  --tip-orta:   clamp(1rem, 0.95rem + 0.2vw, 1.0625rem);      /* düğme, arayüz  */
+  --tip-govde:  20px;                                         /* masal metni, JS ile değişir */
+  --tip-ara:    clamp(1.375rem, 1.25rem + 0.5vw, 1.625rem);
+  --tip-baslik: clamp(2rem, 1.5rem + 1.8vw, 2.75rem);
+  --tip-dev:    clamp(2.375rem, 1.9rem + 1.9vw, 3.25rem);
+
+  /* Okuma ayarları — JS bunları değiştirir */
+  --metin-aralik: 1.7;    /* satır aralığı */
+  --metin-olcu:   66ch;   /* metin sütunu genişliği: 60–75 karakter arası */
+
+  /* Sayfanın tek köşe yarıçapı ve tek kenar boşluğu */
+  --kose: 0px;            /* köşeler keskin: kitap sayfası hissi */
+  --kenar: clamp(16px, 3vw, 32px);
+  --gecis: 240ms ease;
+}
+
+/* --- Sepya okuma modu --- */
+html[data-tema="sepya"] {
+  --renk-zemin: #e9d9b8;
+  --renk-kagit: #f1e4c8;
+  --renk-metin: #30220f;
+  --renk-soluk: #6a5631;
+  --renk-secim: #d8c08c;
+  --renk-hardal: #6d4a0e;   /* sepya zemin daha koyu, hardal da koyulaşmalı */
+}
+
+/* --- Koyu okuma modu --- */
+html[data-tema="koyu"] {
+  --renk-zemin:   #16120d;
+  --renk-kagit:   #201a13;
+  --renk-metin:   #ede1cb;
+  --renk-soluk:   #b3a28a;
+  --renk-saha:    #0f2840;
+  --renk-saha-ust:#163a5f;
+  --renk-vurgu:   #e0938f;
+  --renk-hardal:  #d8ab52;
+  --renk-secim:   #4a3a20;
+  /* Koyu temada vurgu rengi açık; üzerine gelen yazı da koyu olmalı */
+  --renk-vurgu-yazi:  #16120d;
+  --renk-vurgu-hover: #efb3af;
+}
+
+/* ===========================================================================
+   2. SIFIRLAMA VE TEMEL
+   =========================================================================== */
+* { box-sizing: border-box; }
+
+/* Düğme ve giriş alanları tarayıcıdan gelen kendi yazı tipini kullanır.
+   Sayfadaki tek yazı tipini devralsınlar diye bu kural gerekli. */
+button, input, select, textarea { font-family: inherit; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--renk-zemin);
+  color: var(--renk-metin);
+  font-family: var(--yazi);
+  font-size: var(--tip-govde);
+  line-height: var(--metin-aralik);
+  -webkit-text-size-adjust: 100%;
+}
+
+h1, h2, h3 {
+  font-weight: 400;              /* başlıklar kalın değil, büyük */
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0;
+  text-wrap: balance;
+}
+
+p { margin: 0 0 1em; }
+
+a {
+  color: var(--renk-vurgu);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+::selection { background: var(--renk-secim); color: var(--renk-metin); }
+
+/* Klavyeyle gezen için görünür odak halkası */
+:focus-visible {
+  outline: 3px solid var(--renk-vurgu);
+  outline-offset: 2px;
+}
+
+/* Ekran okuyucuya görünür, ekranda görünmez metin.
+   Buradaki 1px bir ayırıcı çizgi değil, öğeyi ekrandan gizleme yöntemi. */
+.gizli-metin {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+/* İçeriğe atla bağlantısı: sekme tuşuna basınca görünür */
+.atla {
+  position: absolute;
+  left: var(--bosluk-2);
+  top: -100px;
+  z-index: 50;
+  background: var(--renk-vurgu);
+  color: var(--renk-vurgu-yazi);
+  padding: var(--bosluk-1) var(--bosluk-2);
+  font-size: var(--tip-kucuk);
+  text-decoration: none;
+  transition: top var(--gecis);
+}
+.atla:focus { top: var(--bosluk-2); }
+
+/* ===========================================================================
+   3. ÜST ÇUBUK — marka, üç elma ilerlemesi, gezinme
+   =========================================================================== */
+.ust {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--bosluk-2);
+  padding: var(--bosluk-1) var(--kenar);
+  background: var(--renk-zemin);
+  font-size: var(--tip-kucuk);
+}
+
+.marka {
+  font-size: var(--tip-orta);
+  letter-spacing: -0.01em;
+}
+
+/* --- Üç elma: sayfanın okuma ilerlemesi --- */
+.elmalar {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: var(--bosluk-1);
+}
+.elmalar svg { display: block; width: 84px; height: 30px; }
+.elma-cizgi { fill: none; stroke: var(--renk-soluk); stroke-width: 1.6; }
+.elma-dolu  { fill: var(--renk-vurgu); stroke: none; }
+.elmalar-yazi { color: var(--renk-soluk); font-variant-numeric: tabular-nums; }
+
+.ust-gezinme {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: var(--bosluk-3);
+}
+.ust-gezinme a { color: var(--renk-metin); text-decoration: none; }
+.ust-gezinme a:hover { text-decoration: underline; }
+
+/* ===========================================================================
+   4. AÇILIŞ — ikiye bölünmüş sahne
+   Sol yarı parşömen bir sayfa, sağ yarı yerinde duran çini mavisi alan.
+   =========================================================================== */
+.acilis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  min-height: calc(100svh - 48px);
+}
+
+.acilis-sayfa {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--bosluk-6) var(--kenar) var(--bosluk-7) var(--kenar);
+  max-width: 34rem;
+  margin-left: auto;
+  margin-right: var(--bosluk-5);
+}
+
+.acilis-sayfa h1 {
+  font-size: var(--tip-dev);
+  max-width: 21ch;             /* başlık en çok iki satır olsun */
+  margin-bottom: var(--bosluk-3);
+}
+
+.giris {
+  font-size: var(--tip-ara);
+  line-height: 1.4;
+  max-width: 34ch;
+  margin-bottom: var(--bosluk-4);
+}
+
+/* Sayfanın tek eylem düğmesi */
+.eylem {
+  align-self: flex-start;
+  display: inline-block;
+  background: var(--renk-vurgu);
+  color: var(--renk-vurgu-yazi);
+  font-size: var(--tip-orta);
+  padding: 18px 32px;
+  border: 0;
+  border-radius: var(--kose);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--gecis), background var(--gecis);
+}
+.eylem:hover { background: var(--renk-vurgu-hover); }
+.eylem:active { transform: translateY(1px); }
+
+/* --- Sağ yarı: yerinde duran çini alan --- */
+.acilis-saha {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100svh;
+  background: var(--renk-saha);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+.acilis-saha .cini-yildiz {
+  width: min(62%, 420px);
+  height: auto;
+  color: var(--renk-saha-yazi);
+  opacity: 0.92;
+}
+.saha-serit {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--bosluk-2);
+  padding: var(--bosluk-2) var(--bosluk-4);
+  background: var(--renk-kagit);
+  color: var(--renk-metin);
+  font-size: var(--tip-kucuk);
+}
+
+/* ===========================================================================
+   5. KİLİM ŞERİDİ — bölümleri ayıran tek süs
+   =========================================================================== */
+.kilim {
+  display: block;
+  width: 100%;
+  height: 34px;
+  color: var(--renk-saha);
+}
+
+/* ===========================================================================
+   6. MASALLAR BÖLÜMÜ — bölünmeyi kırar, tam genişlikte akar
+   =========================================================================== */
+.masallar {
+  padding: var(--bosluk-6) var(--kenar) var(--bosluk-7);
+}
+.bolum-baslik {
+  font-size: var(--tip-baslik);
+  margin-bottom: var(--bosluk-4);
+}
+
+/* --- Arama ve etiket süzgeci --- */
+.araclar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bosluk-2) var(--bosluk-3);
+  margin-bottom: var(--bosluk-4);
+}
+.arama-kutu {
+  display: flex;
+  align-items: baseline;
+  gap: var(--bosluk-2);
+}
+.arama-kutu label { font-size: var(--tip-kucuk); color: var(--renk-soluk); }
+#arama {
+  font-size: var(--tip-orta);
+  padding: 12px 14px;
+  width: 20rem;
+  max-width: 100%;
+  color: var(--renk-metin);
+  background: var(--renk-kagit);
+  border: 2px solid var(--renk-metin);
+  border-radius: var(--kose);
+}
+.sonuc-sayisi { font-size: var(--tip-kucuk); color: var(--renk-soluk); }
+
+.etiketler { display: flex; flex-wrap: wrap; gap: var(--bosluk-1); }
+.etiket-dugme {
+  font-size: var(--tip-kucuk);
+  padding: 8px 14px;
+  color: var(--renk-metin);
+  background: transparent;
+  border: 2px solid var(--renk-soluk);
+  border-radius: var(--kose);
+  cursor: pointer;
+  transition: background var(--gecis), color var(--gecis), border-color var(--gecis);
+}
+.etiket-dugme:hover { border-color: var(--renk-metin); }
+.etiket-dugme[aria-pressed="true"] {
+  background: var(--renk-saha);
+  border-color: var(--renk-saha);
+  color: var(--renk-saha-yazi);
+}
+/* "N etiket daha" düğmesi: süzgeç değil, liste açıcı — çerçevesiz dursun */
+.etiket-daha {
+  border-color: transparent;
+  color: var(--renk-vurgu);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.etiket-daha:hover { border-color: transparent; color: var(--renk-metin); }
+
+/* --- Liste gövdesi: solda yerinde duran motif, sağda masal listesi --- */
+.masallar-govde {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: var(--bosluk-6);
+  align-items: start;
+}
+.motif-alan {
+  position: sticky;
+  top: 12vh;
+  aspect-ratio: 4 / 5;
+  background: var(--renk-saha);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.motif-alan svg {
+  width: 66%;
+  height: auto;
+  color: var(--renk-saha-yazi);
+}
+/* On motif üst üste durur, yalnızca açık olan görünür.
+   Böylece masal değişince motif yavaşça karşı motife geçer. */
+.motif { opacity: 0; transition: opacity 420ms ease; }
+.motif.acik { opacity: 1; }
+.motif-alt {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: var(--bosluk-2) var(--bosluk-3);
+  background: var(--renk-kagit);
+  color: var(--renk-metin);
+  font-size: var(--tip-kucuk);
+}
+
+.masal-listesi { list-style: none; margin: 0; padding: 0; }
+.masal-satir { border: 0; }
+.masal-dugme {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--kose);
+  padding: var(--bosluk-2) var(--bosluk-2) var(--bosluk-2) 0;
+  color: var(--renk-metin);
+  font-size: var(--tip-ara);
+  line-height: 1.2;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: var(--bosluk-2);
+  transition: background var(--gecis);
+}
+.masal-dugme:hover { background: var(--renk-kagit); }
+.masal-dugme[aria-current="true"] { font-weight: 700; }
+.masal-dugme .satir-etiket {
+  font-size: var(--tip-kucuk);
+  color: var(--renk-hardal);
+  text-align: right;
+}
+/* Okunmuş masalın yanındaki dolu elma işareti */
+.okundu-isaret { width: 13px; height: 15px; vertical-align: -2px; margin-right: 6px; fill: var(--renk-vurgu); }
+
+/* Seçili satırın altında açılan kısa tanıtım */
+.satir-ozet {
+  margin: 0 0 var(--bosluk-2);
+  padding-right: var(--bosluk-3);
+  max-width: 40ch;
+  font-size: var(--tip-orta);
+  line-height: 1.5;
+  color: var(--renk-soluk);
+}
+
+/* ===========================================================================
+   7. OKUMA BÖLÜMÜ — solda yerinde duran ray, sağda okuma kolonu
+   =========================================================================== */
+.okuma {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: var(--bosluk-6);
+  padding: var(--bosluk-6) var(--kenar) var(--bosluk-7);
+  background: var(--renk-kagit);
+}
+
+.ray {
+  position: sticky;
+  top: 72px;
+  align-self: start;
+}
+.ray h2 { font-size: var(--tip-baslik); margin-bottom: var(--bosluk-3); }
+
+.ray-liste { list-style: none; margin: 0 0 var(--bosluk-5); padding: 0; }
+.ray-liste button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 7px 0;
+  color: var(--renk-metin);
+  font-size: var(--tip-orta);
+  line-height: 1.35;
+  cursor: pointer;
+}
+.ray-liste button:hover { color: var(--renk-vurgu); }
+.ray-liste button[aria-current="true"] { font-weight: 700; color: var(--renk-vurgu); }
+
+/* --- Okuma ayarları --- */
+.ayar-grup { margin-bottom: var(--bosluk-3); }
+.ayar-baslik {
+  display: block;
+  font-size: var(--tip-kucuk);
+  color: var(--renk-soluk);
+  margin-bottom: var(--bosluk-1);
+}
+.ayar-sira { display: flex; gap: var(--bosluk-1); flex-wrap: wrap; }
+.ayar-dugme {
+  font-size: var(--tip-kucuk);
+  min-width: 42px;
+  padding: 9px 12px;
+  color: var(--renk-metin);
+  background: transparent;
+  border: 2px solid var(--renk-soluk);
+  border-radius: var(--kose);
+  cursor: pointer;
+  transition: background var(--gecis), color var(--gecis), border-color var(--gecis);
+}
+.ayar-dugme:hover:not([disabled]) { border-color: var(--renk-metin); }
+.ayar-dugme[disabled] { opacity: 0.4; cursor: default; }
+.ayar-dugme[aria-pressed="true"] {
+  background: var(--renk-metin);
+  border-color: var(--renk-metin);
+  color: var(--renk-zemin);
+}
+.ayar-olcu { font-size: var(--tip-kucuk); color: var(--renk-soluk); align-self: center; }
+
+/* --- Masal metni --- */
+.masal {
+  max-width: var(--metin-olcu);
+}
+.masal-ust { margin-bottom: var(--bosluk-4); }
+.masal h2 { font-size: var(--tip-baslik); margin-bottom: var(--bosluk-2); }
+.masal-etiket-sira {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bosluk-1) var(--bosluk-2);
+  font-size: var(--tip-kucuk);
+  color: var(--renk-hardal);
+}
+.masal-metin > p {
+  font-size: var(--tip-govde);
+  line-height: var(--metin-aralik);
+  margin-bottom: 1.15em;
+  /* Kaynaktaki satır sonları korunur: masallardaki karşılıklı konuşmalar
+     alt alta satırlar hâlinde yazılmış, öyle de okunmalı. */
+  white-space: pre-line;
+}
+.masal-metin mark {
+  background: var(--renk-secim);
+  color: var(--renk-metin);
+  padding: 0 2px;
+}
+.metin-yok {
+  font-size: var(--tip-orta);
+  color: var(--renk-vurgu);
+}
+.kaynak-kunye {
+  margin-top: var(--bosluk-4);
+  padding-top: var(--bosluk-2);
+  font-size: var(--tip-kucuk);
+  line-height: 1.5;
+  color: var(--renk-soluk);
+  /* Kaynak künyeleri uzun bağlantı adresleri içeriyor. Bölünmezlerse
+     telefonda sütunu genişletip yatay kaydırmaya yol açıyorlar. */
+  overflow-wrap: anywhere;
+}
+.masal-metin > p { overflow-wrap: break-word; }
+
+/* Önceki / sonraki masal */
+.gezinme {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--bosluk-2);
+  max-width: var(--metin-olcu);
+  margin-top: var(--bosluk-5);
+}
+.gezinme button {
+  min-height: 72px;
+  padding: var(--bosluk-2);
+  text-align: left;
+  background: var(--renk-zemin);
+  color: var(--renk-metin);
+  border: 0;
+  border-radius: var(--kose);
+  font-size: var(--tip-orta);
+  line-height: 1.35;
+  cursor: pointer;
+  transition: background var(--gecis);
+}
+.gezinme button:hover:not([disabled]) { background: var(--renk-secim); }
+.gezinme button[disabled] { opacity: 0.45; cursor: default; }
+.gezinme .yon {
+  display: block;
+  font-size: var(--tip-kucuk);
+  color: var(--renk-soluk);
+  margin-bottom: 4px;
+}
+
+/* ===========================================================================
+   8. DERLEME NOTU — ortada duran bir mektup
+   =========================================================================== */
+.derleme {
+  padding: var(--bosluk-7) var(--kenar);
+}
+.mektup {
+  max-width: 34rem;
+  margin: 0 auto;
+}
+.mektup h2 { font-size: var(--tip-baslik); margin-bottom: var(--bosluk-4); }
+.mektup p { font-size: var(--tip-orta); line-height: 1.6; }
+.imza {
+  margin-top: var(--bosluk-3);
+  font-style: italic;
+  font-size: var(--tip-ara);
+}
+.imza span {
+  display: block;
+  font-style: normal;
+  font-size: var(--tip-kucuk);
+  color: var(--renk-soluk);
+}
+
+/* ===========================================================================
+   9. ALT SATIR — tek sessiz satır
+   =========================================================================== */
+.alt {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: baseline;
+  gap: var(--bosluk-3);
+  padding: var(--bosluk-5) var(--kenar) var(--bosluk-4);
+  font-size: var(--tip-kucuk);
+  color: var(--renk-soluk);
+}
+.alt nav { justify-self: center; display: flex; gap: var(--bosluk-3); }
+.alt a { color: var(--renk-metin); }
+.alt .sag { justify-self: end; }
+
+/* ===========================================================================
+   10. GİRİŞ HAREKETİ — bölüm parçaları sırayla belirir
+   =========================================================================== */
+/* Parçalar yalnızca JavaScript çalışıyorsa gizlenir. Betik bir sebeple
+   çalışmazsa içerik görünür kalır, boş sayfa görünmez. Sınıfı JS ekler. */
+.js .beliren {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 560ms ease, transform 560ms ease;
+}
+.js .beliren.gorundu { opacity: 1; transform: none; }
+
+/* ===========================================================================
+   11. TELEFON VE TABLET
+   =========================================================================== */
+/* Telefonda açılan masal menüsü düğmesi — masaüstünde gizli */
+.menu-dugme { display: none; }
+
+@media (max-width: 960px) {
+  :root { --bosluk-7: 88px; --bosluk-6: 56px; }
+
+  /* Açılış tek kolona iner, çini alan üstte kısa bir panel olur */
+  .acilis { grid-template-columns: 1fr; min-height: 0; }
+  .acilis-saha { order: -1; height: 56svh; position: relative; }
+  .acilis-sayfa {
+    max-width: none;
+    margin: 0;
+    padding: var(--bosluk-5) var(--kenar) var(--bosluk-6);
+  }
+  .eylem { align-self: stretch; text-align: center; }
+
+  /* Masallar bölümü tek kolon; motif üstte bant olur */
+  .masallar-govde { grid-template-columns: 1fr; gap: var(--bosluk-4); }
+
+  /* Dar ekranda etiketler başlığın yanında değil altında dursun;
+     yan yana dururlarsa başlık üç dört satıra bölünüyor. */
+  .masal-dugme { grid-template-columns: 1fr; gap: 4px; }
+  .masal-dugme .satir-etiket { text-align: left; }
+  .motif-alan { position: relative; top: auto; aspect-ratio: 3 / 2; }
+  /* Kısa kutuda motif taşmasın: genişlik yerine yüksekliğe göre sığdır */
+  .motif-alan svg { width: auto; height: 58%; }
+
+  /* Okuma bölümü tek kolon; ray açılır menüye döner.
+     minmax(0,1fr): sütun içeriğin en dar hâlinden daha geniş olmaya zorlanmasın. */
+  .okuma { grid-template-columns: minmax(0, 1fr); gap: var(--bosluk-4); }
+  .ray { position: static; }
+  .menu-dugme {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 14px var(--bosluk-2);
+    margin-bottom: var(--bosluk-2);
+    background: var(--renk-zemin);
+    color: var(--renk-metin);
+    border: 2px solid var(--renk-metin);
+    border-radius: var(--kose);
+    font-size: var(--tip-orta);
+    cursor: pointer;
+  }
+  .ray-liste[data-acik="hayir"] { display: none; }
+  .ray h2 { display: none; }         /* başlık yerine düğme konuşuyor */
+
+  /* Üst çubuk: gezinme bağlantıları gizlenir, elmalar kalır */
+  .ust { grid-template-columns: 1fr auto; }
+  .ust-gezinme { display: none; }
+
+  .gezinme { grid-template-columns: 1fr; }
+  .alt { grid-template-columns: 1fr; gap: var(--bosluk-1); }
+  .alt nav { justify-self: start; flex-wrap: wrap; }
+  .alt .sag { justify-self: start; }
+}
+
+@media (max-width: 420px) {
+  :root { --kenar: 16px; }
+  #arama { width: 100%; }
+  .arama-kutu { width: 100%; flex-direction: column; align-items: stretch; gap: 6px; }
+  .elmalar svg { width: 66px; height: 24px; }
+  .saha-serit { flex-direction: column; gap: 4px; padding: var(--bosluk-2); }
+}
+
+/* Hareketi azaltmak isteyen kullanıcı için bütün geçişler kapanır */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; animation: none !important; }
+  .beliren { opacity: 1; transform: none; }
+}
+</style>
+</head>
+
+<body>
+
+<a class="atla" href="#okuma">Okuma alanına atla</a>
+
+<!-- ===========================================================================
+     MOTİF TANIMLARI
+     Sayfadaki bütün görseller burada bir kez çizilir, sonra <use> ile tekrar
+     kullanılır. Harici görsel dosyası yok; hepsi satır içi SVG.
+     =========================================================================== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- Kilim şeridi: eşkenar dörtgen ve çengel motifi, yan yana tekrarlar -->
+    <pattern id="kilim-deseni" width="48" height="34" patternUnits="userSpaceOnUse">
+      <path d="M24 3 L45 17 L24 31 L3 17 Z" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M24 10 L38 17 L24 24 L10 17 Z" fill="currentColor"/>
+      <path d="M0 17 L3 17 M45 17 L48 17" stroke="currentColor" stroke-width="1.6"/>
+    </pattern>
+
+    <!-- Elma: üç elma ilerleme göstergesinde kullanılır -->
+    <path id="elma-yol" d="M12 7.5 C6.8 7.5 3.6 11.2 3.6 15.8 C3.6 20.8 7.6 25.6 12 25.6
+                           C16.4 25.6 20.4 20.8 20.4 15.8 C20.4 11.2 17.2 7.5 12 7.5 Z
+                           M12 7.5 C12 4.6 13.4 2.4 16.2 1.8"/>
+  </defs>
+
+  <!-- === Açılış sahnesinin çini yıldızı === -->
+  <symbol id="m-cini" viewBox="0 0 240 240">
+    <g fill="none" stroke="currentColor" stroke-width="2.4">
+      <path d="M120 10 L155 65 L215 50 L200 110 L230 120 L200 130 L215 190 L155 175
+               L120 230 L85 175 L25 190 L40 130 L10 120 L40 110 L25 50 L85 65 Z"/>
+      <circle cx="120" cy="120" r="62"/>
+      <path d="M120 58 L155 120 L120 182 L85 120 Z"/>
+      <circle cx="120" cy="120" r="16" fill="currentColor" stroke="none"/>
+    </g>
+  </symbol>
+
+  <!-- === Masal motifleri: her masala bir motif === -->
+  <!-- 1. Keloğlan ve Altın Bülbül: dalda bülbül, üstünde yıldız -->
+  <symbol id="m-bulbul" viewBox="0 0 120 120">
+    <g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"
+       stroke-linejoin="round">
+      <!-- dal -->
+      <path d="M10 100 H110"/>
+      <!-- gövde: kuyruktan başa uzanan oval -->
+      <path d="M30 88 C30 70 46 60 64 60 C76 60 84 66 84 74 C84 83 74 88 62 88 Z"/>
+      <!-- kuyruk -->
+      <path d="M30 88 L12 94 M30 86 L14 80"/>
+      <!-- baş ve gaga -->
+      <circle cx="86" cy="62" r="9"/>
+      <path d="M95 60 L107 64 L95 68"/>
+      <!-- kanat -->
+      <path d="M46 80 C54 70 66 69 76 76"/>
+      <!-- ayak -->
+      <path d="M58 88 V100 M68 88 V100"/>
+      <circle cx="89" cy="59" r="2" fill="currentColor" stroke="none"/>
+      <!-- altın yıldız -->
+      <path d="M60 10 L66 26 L82 28 L70 39 L74 55 L60 47 L46 55 L50 39 L38 28 L54 26 Z"
+            fill="currentColor" stroke="none"/>
+    </g>
+  </symbol>
+
+  <!-- 2. Hüsnü Yusuf: birbirine dönük iki hilal (kavuşma) -->
+  <symbol id="m-hilal" viewBox="0 0 120 120">
+    <g fill="none" stroke="currentColor" stroke-width="2.4">
+      <path d="M46 24 A38 38 0 1 0 46 96 A30 30 0 1 1 46 24 Z"/>
+      <path d="M74 24 A38 38 0 1 1 74 96 A30 30 0 1 0 74 24 Z"/>
+      <circle cx="60" cy="60" r="5" fill="currentColor" stroke="none"/>
+    </g>
+  </symbol>
+
+  <!-- 3. İncili Çadır: çadır ve eteğinde inci dizisi -->
+  <symbol id="m-cadir" viewBox="0 0 120 120">
+    <g fill="none" stroke="currentColor" stroke-width="2.4">
+      <path d="M60 16 L104 86 H16 Z"/>
+      <path d="M60 16 V86"/>
+      <path d="M60 50 L80 86 M60 50 L40 86"/>
+      <path d="M12 96 H108"/>
+      <g fill="currentColor" stroke="none">
+        <circle cx="24" cy="104" r="3.2"/><circle cx="40" cy="104" r="3.2"/>
+        <circle cx="56" cy="104" r="3.2"/><circle cx="72" cy="104" r="3.2"/>
+        <circle cx="88" cy="104" r="3.2"/>
+      </g>
+    </g>
+  </symbol>
+
+  <!-- 4. Mitişik Kız: büyük dev eşkenarı, içinde küçük yıldız -->
+  <symbol id="m-dev-kiz" viewBox="0 0 120 120">
+    <g fill="none" stroke="currentColor" stroke-width="2.4">
+      <path d="M60 8 L112 60 L60 112 L8 60 Z"/>
+      <path d="M60 30 L90 60 L60 90 L30 60 Z"/>
+      <path d="M60 46 L66 57 L78 59 L69 68 L71 80 L60 74 L49 80 L51 68 L42 59 L54 57 Z"
+            fill="currentColor" stroke="none"/>
+    </g>
+  </symbol>
+
+  <!-- 5. Keloğlan ile Yılan, Köpek, Kedi ve Balık: kıvrılan yılan ve balık -->
+  <symbol id="m-yilan-balik" viewBox="0 0 120 120">
+    <g fill="none" stroke="currentColor" stroke-width="2.4">
+      <path d="M12 40 C32 18 48 62 68 40 C84 22 98 36 108 30"/>
+      <circle cx="108" cy="30" r="3.4" fill="currentColor" stroke="none"/>
+      <path d="M30 86 C44 70 72 70 86 86 C72 102 44 102 30 86 Z"/>
+      <path d="M86 86 L104 74 V98 Z"/>
+      <circle cx="46" cy="83" r="2.6" fill="currentColor" stroke="none"/>
+    </g>
+  </symbol>
+
+  <!-- 6. Öksüz Kız: iğ ve tek yıldız -->
+  <symbol id="m-ig" viewBox="0 0 120 120">
+    <g fill="none" stroke="currentColor" stroke-width="2.4">
+      <path d="M60 12 V108"/>
+      <path d="M60 44 C76 52 76 72 60 80 C44 72 44 52 60 44 Z"/>
+      <path d="M48 100 H72"/>
+      <path d="M26 24 L30 34 L40 36 L33 43 L35 54 L26 48 L17 54 L19 43 L12 36 L22 34 Z"
+            fill="currentColor" stroke="none"/>
+    </g>
+  </symbol>
+
+  <!-- 7. Korkak Adam ve Devler: üç büyük üçgen, önünde küçük figür -->
+  <symbol id="m-devler" viewBox="0 0 120 120">
+    <g fill="none" stroke="currentColor" stroke-width="2.4">
+      <path d="M8 88 L30 28 L52 88 Z"/>
+      <path d="M40 88 L62 16 L84 88 Z"/>
+      <path d="M72 88 L94 34 L116 88 Z"/>
+      <path d="M4 96 H116"/>
+      <circle cx="60" cy="104" r="5" fill="currentColor" stroke="none"/>
+    </g>
+  </symbol>
+
+  <!-- 8. Kırkıncı Oda: kemerli kapı, yanında kırk küçük kare -->
+  <symbol id="m-kirk-oda" viewBox="0 0 120 120">
+    <!-- Kırkıncı oda: aşağıda açılan kemerli kapı -->
+    <g fill="none" stroke="currentColor" stroke-width="2.4">
+      <path d="M40 112 V76 A20 20 0 0 1 80 76 V112 Z"/>
+      <circle cx="70" cy="96" r="3.4"/>
+      <path d="M28 116 H92"/>
+    </g>
+    <!-- Yukarıda kırk kapalı oda: 5 sıra, her sırada 8 kare -->
+    <g fill="currentColor">
+      <rect x="8"  y="4"  width="6" height="6"/><rect x="21" y="4"  width="6" height="6"/>
+      <rect x="34" y="4"  width="6" height="6"/><rect x="47" y="4"  width="6" height="6"/>
+      <rect x="60" y="4"  width="6" height="6"/><rect x="73" y="4"  width="6" height="6"/>
+      <rect x="86" y="4"  width="6" height="6"/><rect x="99" y="4"  width="6" height="6"/>
+      <rect x="8"  y="16" width="6" height="6"/><rect x="21" y="16" width="6" height="6"/>
+      <rect x="34" y="16" width="6" height="6"/><rect x="47" y="16" width="6" height="6"/>
+      <rect x="60" y="16" width="6" height="6"/><rect x="73" y="16" width="6" height="6"/>
+      <rect x="86" y="16" width="6" height="6"/><rect x="99" y="16" width="6" height="6"/>
+      <rect x="8"  y="28" width="6" height="6"/><rect x="21" y="28" width="6" height="6"/>
+      <rect x="34" y="28" width="6" height="6"/><rect x="47" y="28" width="6" height="6"/>
+      <rect x="60" y="28" width="6" height="6"/><rect x="73" y="28" width="6" height="6"/>
+      <rect x="86" y="28" width="6" height="6"/><rect x="99" y="28" width="6" height="6"/>
+      <rect x="8"  y="40" width="6" height="6"/><rect x="21" y="40" width="6" height="6"/>
+      <rect x="34" y="40" width="6" height="6"/><rect x="47" y="40" width="6" height="6"/>
+      <rect x="60" y="40" width="6" height="6"/><rect x="73" y="40" width="6" height="6"/>
+      <rect x="86" y="40" width="6" height="6"/><rect x="99" y="40" width="6" height="6"/>
+      <rect x="8"  y="52" width="6" height="6"/><rect x="21" y="52" width="6" height="6"/>
+      <rect x="34" y="52" width="6" height="6"/><rect x="47" y="52" width="6" height="6"/>
+      <rect x="60" y="52" width="6" height="6"/><rect x="73" y="52" width="6" height="6"/>
+      <rect x="86" y="52" width="6" height="6"/><rect x="99" y="52" width="6" height="6"/>
+    </g>
+  </symbol>
+
+  <!-- 9. Üç Turunçlar: üç turunç, biri yapraklı -->
+  <symbol id="m-turunc" viewBox="0 0 120 120">
+    <g fill="none" stroke="currentColor" stroke-width="2.4">
+      <circle cx="34" cy="76" r="22"/>
+      <circle cx="60" cy="40" r="22"/>
+      <circle cx="86" cy="76" r="22"/>
+      <path d="M60 18 C60 10 66 6 74 8"/>
+      <path d="M34 76 L34 76 M60 40 L60 40"/>
+      <circle cx="60" cy="40" r="4" fill="currentColor" stroke="none"/>
+      <circle cx="34" cy="76" r="4" fill="currentColor" stroke="none"/>
+      <circle cx="86" cy="76" r="4" fill="currentColor" stroke="none"/>
+    </g>
+  </symbol>
+
+  <!-- 10. Üç Oğlan: üç yol, üç ok -->
+  <symbol id="m-uc-ok" viewBox="0 0 120 120">
+    <g fill="none" stroke="currentColor" stroke-width="2.4">
+      <path d="M60 106 V62 M60 62 L22 24 M60 62 L98 24"/>
+      <path d="M60 50 L54 62 L66 62 Z" fill="currentColor" stroke="none"/>
+      <path d="M22 24 L34 28 L26 36 Z" fill="currentColor" stroke="none"/>
+      <path d="M98 24 L86 28 L94 36 Z" fill="currentColor" stroke="none"/>
+      <path d="M30 106 H90"/>
+    </g>
+  </symbol>
+</svg>
+
+<!-- ===========================================================================
+     ÜST ÇUBUK
+     =========================================================================== -->
+<header class="ust">
+  <span class="marka">Türk Masalları Derlemesi</span>
+
+  <!-- Üç elma: okuma ilerlemesi. "Gökten üç elma düştü" kalıbından geliyor. -->
+  <div class="elmalar">
+    <svg id="elma-gosterge" viewBox="0 0 84 30" role="progressbar"
+         aria-label="Masalın okuma ilerlemesi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <!-- Her elma kendi <g>'si içinde durur ve kaydırma o gruba uygulanır.
+           Böylece dolum dikdörtgeni hep elmanın kendi kutusunda (x 0–24) kalır. -->
+      <defs>
+        <clipPath id="dolum-1"><rect id="dolum-1-r" x="0" y="26" width="24" height="0"/></clipPath>
+        <clipPath id="dolum-2"><rect id="dolum-2-r" x="0" y="26" width="24" height="0"/></clipPath>
+        <clipPath id="dolum-3"><rect id="dolum-3-r" x="0" y="26" width="24" height="0"/></clipPath>
+      </defs>
+      <g transform="translate(1,1)">
+        <use href="#elma-yol" class="elma-cizgi"/>
+        <use href="#elma-yol" class="elma-dolu" clip-path="url(#dolum-1)"/>
+      </g>
+      <g transform="translate(29,1)">
+        <use href="#elma-yol" class="elma-cizgi"/>
+        <use href="#elma-yol" class="elma-dolu" clip-path="url(#dolum-2)"/>
+      </g>
+      <g transform="translate(57,1)">
+        <use href="#elma-yol" class="elma-cizgi"/>
+        <use href="#elma-yol" class="elma-dolu" clip-path="url(#dolum-3)"/>
+      </g>
+    </svg>
+    <span class="elmalar-yazi" id="elma-yazi">0%</span>
+  </div>
+
+  <nav class="ust-gezinme" aria-label="Sayfa içi gezinme">
+    <a href="#masallar">Masallar</a>
+    <a href="#okuma">Okuma</a>
+    <a href="#derleme">Bu derleme üzerine</a>
+  </nav>
+</header>
+
+<!-- ===========================================================================
+     1. AÇILIŞ
+     =========================================================================== -->
+<section class="acilis" aria-labelledby="acilis-baslik">
+  <div class="acilis-sayfa">
+    <h1 id="acilis-baslik" class="beliren">Evvel zaman içinde, on masal</h1>
+    <p class="giris beliren">
+      On Türk halk masalı, kaynaklarıyla birlikte, okumak için tek sayfada.
+      Yazı boyutunu, satır aralığını ve okuma modunu kendine göre ayarla.
+    </p>
+    <a class="eylem beliren" href="#okuma" id="ilk-masal-dugme">İlk masalı aç</a>
+  </div>
+
+  <div class="acilis-saha">
+    <svg class="cini-yildiz" viewBox="0 0 240 240" aria-hidden="true"><use href="#m-cini"/></svg>
+    <div class="saha-serit">
+      <span>On masal · kaynak metinler</span>
+      <span>Gökten üç elma düştü</span>
+    </div>
+  </div>
+</section>
+
+<!-- Kilim şeridi: açılışı masallardan ayırır -->
+<svg class="kilim" viewBox="0 0 480 34" preserveAspectRatio="none" aria-hidden="true">
+  <rect width="480" height="34" fill="url(#kilim-deseni)"/>
+</svg>
+
+<!-- ===========================================================================
+     2. MASALLAR
+     =========================================================================== -->
+<section class="masallar" id="masallar" aria-labelledby="masallar-baslik">
+  <h2 class="bolum-baslik beliren" id="masallar-baslik">Masallar</h2>
+
+  <div class="araclar beliren">
+    <div class="arama-kutu">
+      <label for="arama">Masal ara</label>
+      <input type="search" id="arama" placeholder="Başlıkta ve metinde ara" autocomplete="off"
+             spellcheck="false">
+    </div>
+    <p class="sonuc-sayisi" id="sonuc-sayisi" role="status" aria-live="polite"></p>
+    <div class="etiketler" id="etiket-sira" role="group" aria-label="Etikete göre süz"></div>
+  </div>
+
+  <div class="masallar-govde">
+    <div class="motif-alan beliren">
+      <!-- On masalın motifi üst üste durur; JS yalnızca "acik" sınıfını taşır -->
+      <svg id="liste-motif" viewBox="0 0 120 120" aria-hidden="true">
+        <use class="motif acik" href="#m-bulbul"/>
+        <use class="motif" href="#m-hilal"/>
+        <use class="motif" href="#m-cadir"/>
+        <use class="motif" href="#m-dev-kiz"/>
+        <use class="motif" href="#m-yilan-balik"/>
+        <use class="motif" href="#m-ig"/>
+        <use class="motif" href="#m-devler"/>
+        <use class="motif" href="#m-kirk-oda"/>
+        <use class="motif" href="#m-turunc"/>
+        <use class="motif" href="#m-uc-ok"/>
+      </svg>
+      <p class="motif-alt" id="motif-alt">Keloğlan ve Altın Bülbül</p>
+    </div>
+
+    <ol class="masal-listesi" id="masal-listesi"></ol>
+  </div>
+</section>
+
+<!-- ===========================================================================
+     3. OKUMA ALANI
+     =========================================================================== -->
+<section class="okuma" id="okuma">
+  <!-- Kenar menü: masal listesi ve okuma ayarları -->
+  <aside class="ray" aria-labelledby="ray-baslik">
+    <h2 id="ray-baslik">Okuma</h2>
+
+    <button class="menu-dugme" id="menu-dugme" aria-expanded="false" aria-controls="ray-liste">
+      Masal seç (10)
+    </button>
+    <ul class="ray-liste" id="ray-liste" data-acik="evet" aria-label="Masal listesi"></ul>
+
+    <div class="ayar-grup">
+      <span class="ayar-baslik" id="et-boyut">Yazı boyutu</span>
+      <div class="ayar-sira" role="group" aria-labelledby="et-boyut">
+        <button class="ayar-dugme" id="yazi-kucult" aria-label="Yazıyı küçült">A−</button>
+        <button class="ayar-dugme" id="yazi-buyult" aria-label="Yazıyı büyült">A+</button>
+        <span class="ayar-olcu" id="yazi-olcu">20px</span>
+      </div>
+    </div>
+
+    <div class="ayar-grup">
+      <span class="ayar-baslik" id="et-aralik">Satır aralığı</span>
+      <div class="ayar-sira" role="group" aria-labelledby="et-aralik" id="aralik-sira">
+        <button class="ayar-dugme" data-aralik="1.5" aria-pressed="false">Sıkı</button>
+        <button class="ayar-dugme" data-aralik="1.7" aria-pressed="true">Normal</button>
+        <button class="ayar-dugme" data-aralik="1.95" aria-pressed="false">Geniş</button>
+      </div>
+    </div>
+
+    <div class="ayar-grup">
+      <span class="ayar-baslik" id="et-tema">Okuma modu</span>
+      <div class="ayar-sira" role="group" aria-labelledby="et-tema" id="tema-sira">
+        <button class="ayar-dugme" data-tema="acik"  aria-pressed="true">Açık</button>
+        <button class="ayar-dugme" data-tema="sepya" aria-pressed="false">Sepya</button>
+        <button class="ayar-dugme" data-tema="koyu"  aria-pressed="false">Koyu</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Masalın kendisi -->
+  <main>
+    <article class="masal" id="masal" aria-labelledby="masal-baslik">
+      <div class="masal-ust">
+        <h2 id="masal-baslik" tabindex="-1">—</h2>
+        <p class="masal-etiket-sira" id="masal-etiketler"></p>
+      </div>
+      <div class="masal-metin" id="masal-metin"></div>
+      <p class="kaynak-kunye" id="masal-kaynak"></p>
+    </article>
+
+    <nav class="gezinme" aria-label="Masallar arasında gezinme">
+      <button id="onceki-dugme"><span class="yon">Önceki masal</span><span id="onceki-ad">—</span></button>
+      <button id="sonraki-dugme"><span class="yon">Sonraki masal</span><span id="sonraki-ad">—</span></button>
+    </nav>
+  </main>
+</section>
+
+<!-- Kilim şeridi: okumayı derleme notundan ayırır -->
+<svg class="kilim" viewBox="0 0 480 34" preserveAspectRatio="none" aria-hidden="true">
+  <rect width="480" height="34" fill="url(#kilim-deseni)"/>
+</svg>
+
+<!-- ===========================================================================
+     4. BU DERLEME ÜZERİNE
+     =========================================================================== -->
+<section class="derleme" id="derleme" aria-labelledby="derleme-baslik">
+  <div class="mektup beliren">
+    <h2 id="derleme-baslik">Bu derleme üzerine</h2>
+
+    <p>
+      Bu sayfada on Türk halk masalı var. Masalları ben yazmadım, yeniden de anlatmadım:
+      her metin bir kaynaktan geldi ve olduğu gibi duruyor. Her masalın altında kaynağının
+      künyesi yazılı; emin olmadığım hiçbir kaynağı yazmadım.
+    </p>
+
+    <p>
+      Seçim on masalla sınırlı, ama her biri ayrı bir damardan geliyor. Keloğlan'ın yoksul
+      ve zeki kahramanlığı, Hüsnü Yusuf'un kavuşma arayışı, Öksüz Kız'ın üvey evlat acısı,
+      hayvanlarla kurulan dostluk, devlerin karşısındaki korkak adamın mizahı, Kırkıncı
+      Oda'nın yasak kapısı, üç kardeş ile üç turunç motifi. Aynı karakterin tekrarı yerine
+      farklı temalar tercih edildi.
+    </p>
+
+    <p>
+      Sayfanın kendisi sıfırdan yazıldı: hazır şablon, hazır tema, dışarıdan yüklenen font
+      ya da görsel yok. Kilim şeridi, çini yıldızı ve her masalın kendi motifi bu dosyanın
+      içinde, elle çizilmiş SVG olarak duruyor. Sayfa internet bağlantısı olmadan açılır.
+    </p>
+
+    <p>
+      Üstteki üç elma bir süs değil. Masalların kapanış kalıbı olan "gökten üç elma düştü:
+      biri anlatana, biri dinleyene, biri de bana" cümlesinden geliyor; okudukça doluyor.
+      Üçüncü elma dolduğunda masal bitmiş olur.
+    </p>
+
+    <p class="imza">
+      Oya Meriç Alpay
+      <span>derleyen</span>
+    </p>
+  </div>
+</section>
+
+<!-- ===========================================================================
+     ALT SATIR
+     =========================================================================== -->
+<footer class="alt">
+  <span>On Türk halk masalı</span>
+  <nav aria-label="Alt gezinme">
+    <a href="#masallar">Masallar</a>
+    <a href="#derleme">Derleme notu</a>
+    <a href="#acilis-baslik" id="basa-don">Başa dön</a>
+  </nav>
+  <span class="sag">2026 · ders ödevi</span>
+</footer>
+
+<script>
+/* ===========================================================================
+   1. MASAL VERİSİ
+   Bu blok derle.py tarafından masallar/*.md dosyalarından üretilir.
+   Metinler kaynaklardan geldiği gibi durur; elle düzenlenmez.
+   =========================================================================== */
+    // === MASAL VERİSİ BAŞLANGIÇ (bu bloğu derle.py üretir, elle düzenlemeyin) ===
+    const MASALLAR = [
+      {
+        id: "01-keloglan-ve-altin-bulbul",
+        baslik: "Keloğlan ve Altın Bülbül",
+        etiketler: ["keloğlan", "altın bülbül", "kardeş kıskançlığı", "dev"],
+        kaynak: "Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), \"Keloğlan ve Altın Bülbül Masalı\", derleyen Osman Saygı, Türk Folklor Araştırmaları Dergisi, 1969, sayı 240. Resmî sayfa: https://www.kulturportali.gov.tr/portal/keloglanvealtinbulbulmasali. Metnin alındığı ayna: masaloku.com, https://www.masaloku.com/keloglan-ve-altin-bulbul.htm (yayın 2 Aralık 2014; erişim 29 Ekim 2026)",
+        metin: [
+          "Bir varmış, bir yokmuş; evvel zaman içinde kalbur saman içinde, deve tellâl iken, horozlar berber iken; Bir padişah varmış. Bu padişah, her tarafı camdan bir cami yaptırmış. Bir Cuma günü namazdan çıkarken, eli yüzü pak aksakallı bir ihtiyar görmüş. İhtiyar padişah'a demiş ki:",
+          "\"Padişahım, eğer Kafdağı'nın ardındaki, \"Altın Bülbül'ü getirir camiin bitişiğine koyarsan, eserin tamamlanır\" demiş ve gözden kaybolmuş. Padişah, günden güne üzülmüş. Bir gün çocuklarına demiş ki:",
+          "\"Evlâtlarım: Kafdağı'nın ardındaki, Altın Bülbül'ü nasıl getireceğimi düşünüyorum.\" Çocukların hepsi bir ağızdan babalarına, söz vermişler. Atlarına binip; yola düşmüşler. Gel zaman, git zaman bir pınarın başına varmışlar.\nYemişler, içmişler tekrar yola koyulmuşlar. Giderken önlerine üç yol gözükmüş. Büyük oğlan haykırmış; Ben birinciden gideceğim. Ortancası ben ikinciden gideceğim. Küçük oğlana da bataklık yol düştü, deyip bir birinden ayrılmışlar. Büyük oğlanla, ortancası giderken, yolları birleşmiş ve bir şehre varmışlar. Paraları kalmayınca da biri hancıya biri de lokantacıya çırak olmuşlar. Biz gelelim küçük oğlan'a; Küçük oğlan, bin bir zorluk içinde yoluna devam etmiş.",
+          "Çalı ve çırpılardan geçerken eli yüzü kan içinde kalmış. Nihayet bir pınara varmış. Pınarın başında eli yüzü nurlu, aksakallı bir ihtiyar görmüş. Selamlaşmışlar. Suyunu içtikten sonra nereye gittiğini niçin gittiğini anlatmış. İhtiyar çocuğu yolundan çevirmek istemiş.",
+          "Oğlan:",
+          "\"Ben babama söz verdim. Ölmek var, dönmek yok.",
+          "İhtiyar, oğlanın sırtını üç defa sıvazlamış. Çocuk yine ıssız çöllere düşmüş. Açlıktan, susuzluktan bitkin bir hale gelmiş. Yedi canlı devin sarayına varmış. Devi öldürerek saraydakiperi kızı ile tanışmış. Oradan yoluna tekrar devam etmiş. Gide gide sekiz canlı devin sarayına varmış. Bu devi de öldürerek oradaki peri kızı ile tanışmış. Kız onun nereye gittiğini sormuş; o da \"Altın Bülbül'e\" diye cevap vermiş. Kız, buraya nasıl gidileceğini, dokuz canlı devden nasıl korunacağını anlatmış. Çocuk, tekrar yola koyulmuş ve dokuz canlı devi de haklamış. Fakat devin sarayında hangi odaya dalacağını şaşırmış. Çünkü 99 odası varmış. Sarayda bir kedinin işareti üzerine \"Altın Bülbül\"ü alarak yola koyulmuş ve önce, rastladığı ihtiyarın yanına gelmiş. Saraydan getirdiği eşyaları ihtiyarın yanına bırakarak, kardeşlerini aramak üzere, yeniden yola devam etmiş.",
+          "Şehrin birinde kardeşlerini bularak onların her birine birer at almış. İhtiyarın yanına giderek Altın Bülbül'ü almışlar. Eve gelirlerken, ağabeyleri, kıskandıklarından küçük kardeşlerini suya atmışlar. Fakat Altın Bülbül babalarının yanında bir defacık olsun ötmemiş. Suya atılan kardeşleri ölmemiş, sırsıklam gide gide bir çobana rastlamış. Bir altın vererek bir koyun almış. Koyunun işkembesini başına geçirmiş olmuş tam bir \"Keloğlan\".\nGide, gide, bir kasabaya varmış. Bir hancıya çırak olmuş. Han sahibi bir gün öyle hasta olmuş ki. Kasabanın tabipleri hiçbir çare bulamamış. Bir aksakallı ihtiyar, \"filan padişahın camiinden bir yudum su getirirsen efendin iyi olur\" demiş.",
+          "Küçük oğlan koşarak, o camiye varmış. Buradaki Altın Bülbül başlamış, ötmeye. Bu olayı padişaha müjdelemişler. Padişah bütün halkı geçirmiş, ötmemiş Keloğlan gelince yine ötmüş. O zaman başındaki işkembeyi çıkararak, babasına kendisini tanıtmış.",
+          "Ertesi gün, çayıra kırk çadır, kurdurmuş, Altın Bülbülü küçük oğlanın getirdiğini anlamış; diğer oğullarını saraydan kovmuş.",
+        ],
+      },
+      {
+        id: "02-husnu-yusuf",
+        baslik: "Hüsnü Yusuf",
+        etiketler: ["peri", "güvercin", "aşk", "padişah kızı"],
+        kaynak: "Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), \"Hüsnü Yusuf\", derleyen Veysel Arseven, Türk Folklor Araştırmaları Dergisi, 1964, sayı 178. Resmî sayfa: https://www.kulturportali.gov.tr/portal/husnuyusuf. Metnin alındığı ayna: Okuryazar, \"Hüsnü Yusuf Masalı\", https://www.okuryazar.com.tr/dergi/husnu-yusuf (erişim 29 Ekim 2026)",
+        metin: [
+          "Bir varmış bir yokmuş, bir padişahın bir tek kızı varmış. Bu kız her gün has bahçenin içinden akan bir derenin kıyısına oturur serinlermiş. Günlerden bir gün yine bu derenin kıyısında serinlerken, kolundaki bileziğini çıkarıp bir taşın üstüne koymuş, derede ellerini yıkarken kırk bir tane beyaz güvercin gelip yeşil çimenlerin üzerine konmuşlar. Bunlardan kırkı bir silkinişte kız, bir tanesi de yakışıklı bir delikanlı oluvermiş. Bütün bu olan bitenleri hayran hayran seyreden padişahın kızı, bileziğini koluna takmak için, dere kenarından kalkınca, yakışıklı delikanlı yeniden bir güvercin oluvermiş, taşın üzerinde duran bileziği boynuna geçirip uçup gitmiş. Kırk kızın kırkıda güvercin olup onun peşinden pırradak uçup gitmişler.",
+          "Ondan sonraki günlerde kız yine has bahçedeki derenin kenarında oturmuş, güvercinleri beklemiş ama ne gelen, ne giden olmuş bir daha. Delikanlıya gönlünü kaptırmış olan kız derdinden hastalanarak yataklara düşmüş. Babası ülkenin en ünlü hekimlerini çağırtmış ama kızın derdine derman bulan olmamış. En son kızına bir hamam yaptırmış; her gelen, önce başından geçen ilginç bir olayı anlatır, ondan sonra yıkanırmış.",
+          "Günlerden bir gün hamama genç ve güzel bir gelin gelmiş ve başından geçen şu olayı anlatmış:",
+          "\"Bir gün çayın kenarında çamaşır yıkarken, işimi bitirmek üzereydim ki, odunum bitti. O sırda otuz katır yükü odun geçiyordu yakınımdan. Peşlerine düşerek yürümeye başladım. Gittiler, gittiler, kayalık bir yerde bir kapının önünde durdular. Biraz sonra kapı açıldı ve katırlarla birlikte ben de içeri girdim. Girmemle kapının kapanması bir oldu. Yürüyerek bir merdivenden yukarı çıktım, bir odaya girdim. Girmemle kapının kapanması bir oldu. Yürüyerek bir merdivenden yukarı çıktım, bir odaya girdim. Burası bir mutfaktı. Nefis yemekler pişiyordu tencerelerin içinde. Birinin kapağını açtım. O sırada bir ses; \"bırak onu, açma kapakları. Onu peri padişahımızın oğlu yiyecek\" diye seslendi. Kapağı kapattım, mutfaktan çıkıp bir başka büyük odaya girdim. İşte o zaman ne olduysa oldu. Tam kırk bir tane beyaz güvercin doldurdu odayı. Kanatlarını çırpar çırpmaz, kırkı birer genç kız, biri de aslan gibi bir yiğit oluverdi. Delikanlı bir odaya girdi, elindeki kamçıyı yere vurarak şaklatınca, odanın her bir yanı tiril tiril titredi.\" Bunun üzerine:",
+          "\"Sizler nasıl titriyorsanız, sevgilim de böyle titreyip inlesin\" dedi ve odadan çıkıp gitti. Ertesi gün katırlarla birlikte ben de bu garip yerden çıkıp evime döndüm.",
+          "Bunu duyan padişahın genç kızı:",
+          "\"Bütün hamam senin olsun, yeter ki beni oraya götür,\" demiş.",
+          "Ertesi gün katırların peşine düşen genç kız, açılan kapıdan içeriye giriyor, tencere kapaklarını kaldırıyor, karnını bir güzelce doyuruyor ve güvercinlerin gelmesini beklemeye koyuluyor. Görünmemek için de büyük odadaki dolaplardan birinin içine saklanıyor. Biraz sonra gelen güvercinlerden kırkı kız, biri de erkek oluyorlar. Bir de ne görsün? Delikanlı, gönül verdiği genç değil mi? Elindeki kamçıyı yere vurarak şaklatınca, her yer titreyip inlediği halde, kızın saklı olduğu dolapta ne bir hareket görülür, ne bir ses duyulur.",
+          "\"Ey dolap, kaç senedir kahrını çekiyorum da, sen niçin inlemiyorsun?\" diye sorar delikanlı.",
+          "\"Ya Hüsnü Yusuf, içinde sevgilin saklı, onun için inlemiyorum,\" diye dile gelen dolap karşılık verir. Dolabı açan delikanlı sevgilisin karşısında görünce, sevincinden deliye döner.",
+          "Gel zaman git zaman, kız, sevgilisine, bir çocukları olacağını müjdeleyince; delikanlı:",
+          "\"Şimdiye kadar periler, senin burada olduğunu anlamadılar. Fakat anlarlarsa seni öldürürler. Ben seni, Padişah babamın sarayına götürüp, kapının önüne bırakırım. Sen de: Hüsnü Yusuf'un başı için beni içeri alın\" dersin. Ben her gün seni görmeye gelirim, diye kızın gönlünü alır, sonra da onu kanadına bindirip babasının sarayı önüne bırakır: O gece kız bir erkek çocuk doğurur.",
+          "Bir gece, saraya gizlice giren Hüsne Yusuf'la kızın konuştuklarını hizmetçiler görüyor ve gidip padişaha haber veriyorlar. Padişah kızı huzuruna çağırtınca, kız olan biteni bir bir anlatıyor. Ertesi gece Hüsnü Yusuf gelince yakalanıyor. \"Serbest bırakmalarını, bırakmadıkları takdirde perilerin hepsini öldüreceklerini söylüyorsa da, gene bırakmıyorlar. Padişah beyaz bir güvercin satın aldırıyor. Sarayın fırınlarından birini de yaktırıyor. Periler gelip Hüsnü Yusuf'u istiyor, üstelik de padişahın üstünü başını parçalıyorlar. Bunun üzerine Padişah elindeki beyaz güvercini havaya kaldırıyor ve:",
+          "\"Hüsnü Yusuf'un yokluğuna yıllarca katlandım, bundan böyle de katlanırım ama sizin yanınıza da bırakmam artık onu,\" diyor. Sonra elindeki güvercini yanmakta olan fırının içine fırlatıyor. Fırlatılanın Hüsnü Yusuf olduğunu zanneden kırk perinin kırkıda fırına dalar ve hepsi de yanarlar. Böylece kötülük perilerinin elinden kurtulan iki gencin düğünü yeniden yapılır, yenilir, içilir, muratlarına geçilir.",
+        ],
+      },
+      {
+        id: "03-incili-cadir",
+        baslik: "İncili Çadır",
+        etiketler: ["padişah kızı", "yeraltı sarayı", "aşk", "şehzade"],
+        kaynak: "Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), \"İncili Çadır\", derleyen Veysel Arseven. Resmî sayfa: https://www.kulturportali.gov.tr/portal/incilicadir",
+        metin: [
+          "Bir varmış, bir yokmuş, evvel zaman içinde, kalbur saman içinde, Allahın kulu çok, çok demesi pek günahmış. Bir padişahla karısının büyük bir derdi varmış. Günlerden bir gün padişah odasına oturmuş derin düşüncelere dalmıştı. Sultan yanına gelerek:",
+          "“Ne yapalım” der; derdini veren, dermanını da verir. Sen hele bir yolculuğa çık.",
+          "Bunun üzerine padişah vezirlerini alarak atlara binip yola düşmüşler. Saatleri günler, günleri haftalar, haftaları aylar kovalar. Bir de arkalarına bakarlar ki bir çuvaldız boyu yol yürümüşler. Oturup dinlenmek için bir yerde konaklamışlar. Bir de bakmışlar ki karşı tepeden garip bir şey uçup geliyor. Beklemişler, beklemişler bir de görmüşler ki yaklaşan ateş topacı, nur yüzlü ak sakaklı bir ihtiyar. Yanlarına yaklaşınca: “Merhaba padişahım” der. Padişah hemen ayağa kalkar ve:",
+          "“Mademki benim padişah olduğumu bildin,” derdimin de ne olduğunu bilirsin, diye sorar.",
+          "“Evet, senin derdini biliyorum.” Sonra cebinden bir elma çıkarır: yarısını sen, yarısını da sultan yesin. Dualarınızı da eksik etmeyin, der, ortadan kaybolur.",
+          "Dokuz ay, dokuz gün sonra nur gibi bir kız bebekleri dünyaya gelir. Çocuk iki üç yaşına gelince, vezirler ilk olarak görmeye gelirler. İçlerinden en yaşlısı, padişahın kulağına eğilerek:",
+          "“Bu kız çok güzel, büyüyünce başınıza dert açabilir,” der. Bunun üzerine padişah, yeraltında bir saray yaptırır. Dışarı ile bağlantısı olmayan, dışarıdan içeriye ışık sızmayan bu saraya küçük kız ile nedimesi yerleşir. Nedime ona okuma yazma ve daha birçok faydalı şeyler öğretir ama doğadan söz açmaktan bilhassa kaçınır.",
+          "Aradan uzun yıllar geçmiş, kız on beş yaşında bir dünya güzeli olmuştur. Bir gün et yemeği yerlerken nedime:",
+          "“Aman” der; sakın kemiği boğazına kaçırma. Bu söz üzerine kız, tutar kemiği pencereden fırlatır, cam kırılır, pencereden içeriye ışık girer. Işığın ne olduğunu unutmuş olan genç kız, onu yakalamak için saatlerce uğraşır. Kan ter içinde kalır. Akşam olur, yatarlar ama kızı bir türlü uyku tutmaz. Işığın geldiği yerleri merak eder. Ertesi gece dadısı uykuya yatınca, bir yolunu bulup yeraltı sarayından kaçar, dışarı çıkar. Bir de ne görsün, saraya yakın tepelerin eteğinde yumak yumak ışıklar. Koşa koşa oraya gider, bakar ki bir sürü çadır. Kapısında iki nöbetçinin uyuya kaldığı, her tarafı inci ile donatılmış en süslü çadırın içine girer. Yatakta, çok güzel bir delikanlı yatmaktadır. Bir tarafında dürülü bir gömlek, başucunda altın, ayakucunda gümüş şamdan yanmakta, sofrada bir kişilik yemek ve bir bardak su durmaktadır.",
+          "Kız, tül gömleğin dürüsünü bozar, şamdanların yerini değiştirir, yemeklerden yer yarım bardak ta su içer ve eve döner. Bakar ki dadı horul horul uyuyor, o da yatar uyur.",
+          "Delikanlı sabahleyin kalkınca, bakar ki yemeklerden yenmiş, gömlek bozulmuş, su içilmiş, nöbetçilere bağırıp çağırır. Akşam dağdan bir torba kar getirtip başının üzerine asar. Kar eridikçe, torbadan akan soğuk su damlaları yüzüne düşer, uyumasına engel olur.",
+          "Kız gene gelir, bir önceki gece yaptıklarının aynını yapar, fakat tam gideceği sırada delikanlı kolundan tutar. “Sen kimsin is misin cis misin?” diye sorar. Kız da: “Ne isim ne de cis, seni yaratan Allahın bir kuluyum” der. Geceyi incili çadırda geçirir. Sabahleyin uyanır ki güneş doğmuş, etrafta da ne incili çadır ne de bir kimse var. Meğerse bir başka ülkenin padişahının oğlu evlenecekmiş. Adet olduğu üzere güveyi ile arkadaşları kırk gün kırk gece dağa çıkar eğlenirlermiş. Bugün de kırkıncı gün olduğu için, çadırlar toplanılmış, incili çadırda yatan padişahın oğlu da arkadaşlarını alıp memleketine dönmüş. Kız başlar ağlamaya. Neden sonra, oradan geçen bir çobandan, çadırların bulunduğu yerin, “Şehvaneli” olduğunu öğrenir. Bunun üzerine kız, çobana:",
+          "“Ne olur çoban, üzerimdeki altınların hepsi senin olsun, bana arkandaki elbiseyle, bir koyun karnı ver,” der. Çoban kızın isteklerini yerine getirir. Partal elbiseleri sırtına, koyun karnını da başına geçirince, olur bir keloğlan bizim kaçar kız, düşer yola. Padişahın oğlu da gider, bir arkasına bakar, iç çekermiş. Keloğlan yanına yaklaşınca, adın nedir diye sormuş. Keloğlan da “Abdal” demiş.",
+          "“Nereden gelirsin?”",
+          "“Şehvanilinden.”",
+          "“Orada ne gördün?”",
+          "“İncili çadır kurulu gördüm. Tül gömleği dürülü gördüm, gümüş şamdan döner gördüm, içinde bir güzel ah edip ağlar gördüm,” deyince delikanlı:",
+          "“Ne deyip ağlıyordu?” diye sorar. Abdal da:",
+          "“Uyudum, nittim,",
+          "Ben bana ettim,",
+          "Gülünen nerkis,",
+          "Yârimi nittin,” deyince abdalın, çadırına gelen genç ve güzel kız olduğunu anlar, bir birlerine sarılıp muratlarına ererler.",
+        ],
+      },
+      {
+        id: "04-mitisik-kiz",
+        baslik: "Mitişik Kız",
+        etiketler: ["dev anası", "kurnaz kız", "kaçış"],
+        kaynak: "Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), \"Mitişik Kız\", derleyen Veysel Arseven. Resmî sayfa: https://www.kulturportali.gov.tr/portal/mitisikkiz",
+        metin: [
+          "Zamanın birinde, birbirleriyle arkadaş olan beş kız varmış. Bunlar her gün tuturuk kazımaya giderlermiş. Bir gün kazıdıkları tuturukla evlerine dönerlerken yorulmuşlar, rastladıkları bir evin kapısını çalmışlar.\n“Teyze, bizi bu akşam misafir eder misin? Çok yorulduk da,” demişler.\nMeğer orası bir dev anasının eviymiş. Kızları hemen içeri almış, yüzlerine gülmüş, rahat yataklar yapmış, karınlarını doyurmuş ve yatırmış. Maksadı, kızlar uyuyunca, onları yemekmiş.\nKızların içinde pek akıllı, pek kurnaz, Mitişik adında bir kız varmış. Devin maksadını sezmiş ve uyumamış. Dev dişlerini güzelce bilemiş, kızları yoklamaya gelmiş. Uyuyup uyumadıklarını anlamak için usulca seslenmiş:\n“Kızlar, kim uyuyor, kim uyanık?”\n“Mitişik kız uyanık.”\n“Kızım sen niye uyumadın?” deyince kız:\n“Evde iken, anam bana her gün baklava, börek pişirir, onları yer, ondan sonra uyurdum,” der.\nDev anası, kız uyusun diye istediklerini yapar, önüne getirir. Mitişik kız da arkadaşlarını uyandırır, kendilerine güzel bir ziyafet çekerler ve gene yatarlar, fakat Mitişik kız uyumaz. Dev anası yine gelir, usulcana seslenir:\n“Kızlar, kim uyuyor, kim uyanık?”\n“Mitişik kız uyanık.”\n“Kızım sen niye uyumadın hâlâ?”\n“Ben evde, baklava, böreği yedikten sonra, anam bana ırmaktan bir kalbur dolusu su getirir, onu içtikten sonra uyurdum,” der.\nDev anası çaresiz, bir kalbur alır, ırmağa su getirmeye gider. Kalburu suya daldırır, çıkarınca su deliklerden boşalırmış, kalburun deliklerine çamur sıvar, her yola başvurur, fakat bir türlü kalbura su dolduramazmış. O suyu doldura dursun, biz gelelim evdekilere.\nDev anası ırmağa gidince, Mitişik kız arkadaşlarını uyandırır:\n“ Aman kızlar, buradan kaçalım, dev anası bizi diri diri yiyecek,” der. Ama gitmeden önce şu dev anasına öyle bir oyun oynayalım ki, Mitişik kızı unutmasın.\nBunun üzerine, tuturuk denklerinden birini evin ortasına yığarlar, kibriti çakarlar. Tuturuk otu çabuk ateş alan bir ot olduğu için, birden bire parlar, alevler volan volan yükselir, bir çırpıda evin her yanını kaplar.\nKalburu bir türlü su dolduramayan dev anası yorulur, evin yolunu tutar. Bir de ne görsün, evi kül olmak üzere.\n“Ah Mitişik kız, vah Mitişik kız; böreğimi, baklavamı yedin, doymadın. Şimdi de evimi ateşlere yediriyorsun, ben sana gösteririm,” der.\nÖte yanda kızlar, fak kurarken, faka basan devin hiddetini seyrediyor, keyifleniyorlarmış. Yedik içtik murada geçtik.",
+        ],
+      },
+      {
+        id: "05-keloglan-ile-yilan-kopek-kedi-ve-balik",
+        baslik: "Keloğlan ile Yılan, Köpek, Kedi ve Balık",
+        etiketler: ["keloğlan", "sihirli yüzük", "hayvan yardımcılar", "ihanet"],
+        kaynak: "Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), \"Keloğlan İle Yılan, Köpek, Kedi ve Balık\", derleyen Dr. Saim Sakaoğlu, Türk Folklor Araştırmaları Dergisi, 1975, sayı 312. Resmî sayfa: https://www.kulturportali.gov.tr/portal/keloglanileyilankopekkedivebalik. Metnin alındığı ayna: masaloku.org, https://masaloku.org/keloglan-ile-yilan-kopek-kedi-ve-balik (erişim 29 Ekim 2026)",
+        metin: [
+          "Vakti zamanında fakir bir kadınla bir Keloğlan varmış. Bir gün Keloğlan odunları satıp parasıyla eve dönerken bir tellâlın bağırdığını görür. Tellâlın elinde kapalı bir kutu vardır:\n\"Bir alan pişman, bir almayan pişman.\" diye bağırmaktadır. Keloğlan düşünür, taşınır, bu kutuyu almaya karar verir ve \"öyle de battık, böyle de; şu yüz parayı vereyim de bu kutuyu alayım.\" der. Kutuyu alıp evine gelir. Annesi de acıkmış, oğlunun ekmek getirmesini bekliyormuş:\n\"Keloğlan, ekmek getirmedin mi? Ben acımdan öldüm, kel doz doz, kafası boklu.\"\n\"Anne ben bugünkü parayı buna verdim.\"",
+          "Keloğlan o kutuyu evin tereğine koyar, kutu orada bir müddet durur. Bir müddet sonra o kutu \"pat\" diye yere düşer, kutunun içinde bir yılan yavrusu. Kadın bağırarak kapıya koşar. Gidip Keloğlan'a haber verirler, Keloğlan gelir. Bu sırada yılan yavrusu dile gelip konuşur:\n\"Ey insanoğlu, beni babama götürürsen sana büyük bir mükâfat verir.\"\n\"Yahu ben senin babanı nerede bulacağım?\"\n\"Sen beni götür, ben sana işaret ederim, sen de o tarafa gidersin.\"\nBunlar yola çıkarlar. Az giderler, çok giderler, azını çoğunu Allah bilir, bir arpa boyu yol ancak gedebilirler. Öyle bir yere gelirler ki hiç insan yok, her tarafta yılanlar var, insanoğlunu görür görmez yılanlar Keloğlan'a hücum ederler. Fakat Keloğlan'ın yanındaki yılan yavrusunu görünce hepsi geriye çekilip bunları selâmlamaya başlarlar. Keloğlan yılana sorar:\n\"Ne oldu, bu ne hal?\"\n\"İşte bunlar benim babamın askerleri. Benim babam bunların padişahıdır, falanca yerde de babamın köşkü vardır.\"\nKöşke doğru giderlerken yılan Keloğlan'a tembih eder:\n\"Eğer babam sana \"Ey insanoğlu, dile dileği, vereyim muradını.\" derse sen diyeceksin ki \"Şu dilinin altındaki yüzüğü bana vereceksin.\" Sakın başka bir şey isteme, sadece o yüzüğü al.\"\nYavru yılanın babasının yanına varırlar. Çok sevinen baba der ki:\n\"Dile dileğini, vereyim muradını.\"\n\"Dilinin altındaki yüzüğü bana ver.\"\nBunun elinden yüzüğü alan Keloğlan tekrar memleketine döner. Fakat yolda Keloğlan'da bir pişmanlık belirir. \"Yahu ben ne yaptım, adam bana dünya kadar altın verdi de almadım. Bu bir yüzük için altı aydır yoldayım.\" O arada nasıl olursa olur, dilini yüzüğe çalar (yüzüğü yalar). Hemen zebella gibi iki arap peyda olur:\n\"Ey ağa, emret; şu dünyayı yakalım mı yıkalım mı?\"\n\"Dünyayı nereye yakıp yıkıyorsunuz? Ne yakın, ne yıkın. Beni şimdi annemin yanına götürün.\"\nKeloğlan beş dakika geçmeden annesinin yanında olur.\n\"Tamam, bu yüzükte iş var.\" Diye düşünür. Keloğlan padişahın kızını severmiş. Bir gün annesine der ki:\n\"Şimdi padişahın kızına dünürcü gideceksin.\"\n\"Dozdoz kel, padişah sana kızını verir mi?\"\n\"Verir anne, sen git iste hele.\"\nZavallı kadın korkar. Kendilerinin doğru dürüst yatacak yerleri yok, padişah ona kızını verir mi? Annesi oğlunun kızdığını görünce:\n\"Dur bakayım dozdozu kel, belki olur. Olursa olsun, olmazsa ne yapalım.\"\nO zamanlarda kapıların önlerinde masa gibi bir yer varmış. Oraya kim oturursa anlarlarmış ki o düğürcüdür\nPadişah pencerenin önünde oturup etrafa bakarken görür ki bir koca nine geldi, düğürcü taşının üzerine oturdu. Padişah cariyelerine emredip koca nineyi köşke çıkarttırır:\n\"Eeee nine, ne emrin var, buyur.\"\n\"Padişahım, Allah yazmışsa ne diyebilirim. Ama gel ki benim bir vaadim var, bunu yapacaksın.\"\n\"Emret.\"\n\"Benim konağımın gündoğu tarafında bir konak yaptıracaksın, aynı benimkine benzeyecek. Senin konak benim konağa gün ışığını bir buçuk saat geç salacak. O kadar ziynetli, o kadar büyük olacak.\"\n\"Olur, yaptırırım.\" deyip eve gelir ve Keloğlan'a çıkışır:\n\"Ah dozdozu kel, kafana pisleyecekler. Sen bunları ne ile yaptıracaksın? Yemeye ekmek bulamıyorsun. Padişah kendisininki gibi bir köşk istiyor. Nerden alıp da yaptıracaksın?\"\nAkşam olunca annesini yatıran Keloğlan yüzüğü yalar, araplar gelir:\n\"Yakalım mı, yıkalım mı?\"\n\"Ne yakın, ne yıkın. Padişahın konağının gün doğu tarafında öyle bir saray yaptıracaksın ki padişahın konağından üç kat daha yüksek olacak. Annemle ben de en üst kata bulunacağız.\"\nKötü yerlerde yatan ihtiyar kadın sabahleyin uyanır ki ne görsün. Nerdeyse göğe çıkmış:\n\"Ulan dozdozu kel, sen burayı niye bu kadar yüksek yaptırdın. Allah belanı vermesin, ben buradan nasıl inip çıkacağım?\"\nAnnesi bunların düşünürken Keloğlan seslenir:\n\"Anne, kalk git, bunu yaptık.\"\nAnnesi tekrar gider, bunu padişahın huzuruna alırlar. Padişah der ki:\n\"Sarayı yaptırdınız, ikinci vaadim de var\"\n\"O da neymiş?\"\n\"Bizim sarayın orta katından senin yaptırdığın sarayın orta katına altın gümüşten bir köprü lâzım ki kızım gidip geldiği zaman güneş vurmasın. Ben çocuğumu zembillerde büyütüyorum.\"\nKeloğlan'ın annesi düşüne düşüne evden içeri girer:\n\"Ah dozdozu kel, ağacı keresteyi mi belliyorsun ki\" patpat\" yaptırıverelim. Padişah senden altın gümüşten köprü istiyor. Bunu nedene alıp da yaptıracaksın?\"\n\"Adam sen de, olur o işler. Hele sen bizim yemeğimizi getir hele.\"\nYemeklerini yerler. Akşam olup da anası yatınca Keloğlan yine arapları çağırır:\n\"Böyle böyle bir köprü isterim!\"\nO gece köprü de kurulur. Padişah bakar ki bundan kurtuluş yok. Tutup büyük kızını buna verir. Düğünlerini yapıp bunları içeriye atarlar.\nYerler içerler, aradan bir müddet geçer. Karısı padişaha der ki:\n\"Gidip kızımızı görelim, onlar bize geldiler, şimdi sıra bizim.\"\n\"Eee hanım ne götürelim? Zenginlik dersen bunlar bizden zengin, paraya ihtiyaçları yok. Bunlara ne hediye götürelim?\"\nPadişahın bir Arap kölesi varmış, onu götürmeye karar verirler.\n\"Bunu götürelim de, yer içer, kalkıp gelirken de \"Enişte, bu Arap köle şimdiye kadar bize hizmet ediyordu. Bundan sonra da sana hizmet etsin.\" der, bırakırız.\"\nArap köle ile birlikte gelirler. Yerler içerler, gitme zamanı gelince:\n\"Enişte, Arap köle şimdiye kadar bize hizmet etti, bundan sonra da sana hizmet etsin.\" deyip Arap köleyi orada bırakırlar. Oysa Keloğlan'ın karısı ile Arap kölenin arası çok kıyakmış: sarayda padişahtan habersiz dalga geçerlermiş.\nArap köle hizmet etmekte olsun, Keloğlan da tazısıyla pisiğini alıp ava kuşa gidermiş. Alıştığı için avcılığı bırakamamış.\nBir gün Arap köle Keloğlan'ın karısına der ki:\n\"Bu Keloğlan eskiden acından ölüyordu, bunda bir hüner var. Bunu bir öğren.\"\nKarısı Keloğlan'ı sıkıştıra sıkıştıra öğrenmeye çalışır:\n\"Biz seninle evlendik, hayatımız bir. Sen niye sırrını bana demiyorsun?\"\n\"Benim sırrım cüzdanımın içindeki şu yüzüktür.\"\nGece Keloğlan uyurken kız yüzüğü alıp hemen Arap köleye verir. Köle alır almaz parmağına takar ve yalar. Hemen Araplar gelir:\n\"Emret, yakalım mı, yıkalım mı?\"\n\"Ne yakın, ne yıkın. Kızı, beni, bir de sarayı denizin ortasındaki şu kulede isterim. Keloğlan ile annesini de eski kaz damlarına götürüp atacaksın.\"\nBeş dakikanın içinde bu işler olur. Sabahleyin Keloğlan kalkar kalkmaz kafası tahtalara vurmaya başlar:\n\"Eyvah!\" der. Bakar ki yüzük yok. Doğruca padişahın yanına gider. Padişah bunu eski devletli Keloğlan zanneder:\n\"Enişte üzülme, ben sana küçük kızımı veririm. O daha güzel, daha içli.\"\n\"Yok, padişahım, ben kız filan istemiyorum.\"\n\"Ya ne istiyorsun?\"\n\"Ben gelinceye kadar anneme bakacaksın, başka bir şey istemem.\"\nAnnesini orada bırakır, tazı ile pisiğini alıp yola koyulur.\nBu Keloğlan'ın bir bacısı varmış, bacısını Zümrüt-ü Anka kuşuna vermişlermiş. Keloğlan epeyce bir yol aldıktan sonra bir gün bir ulu ağacın dibine istirahat etmek için oturur. Bir de bakar ki bir kuş gelip bunun yanına indi:\n\"Selâmünaleyküm.\"\n\"Aleykümselâm.\"\n\"Nerelisin?\"\n\"Felancı yerliyim.\"\nBirbirlerinin aslını neslini sorunca kuş Keloğlanı tanır:\n\"Yahu sen benim kanımsın.\"\n\"Nasıl olur yahu?\"\n\"Ben senin enişten değil miyim?\"\nOrada akraba olduklarını anlarlar. Kuş sorar:\n\"Eee, ne iş için buralara düştün?\"\n\"Durum böyle böyle.\"\n\"Akdeniz'in ortasında bir saray payda oldu, eskiden yoktu. Birkaç gün içinde gördüm.\"\nKeloğlan tazıyla pisiği alıp oraya gider. Tazı dile gelip kediye yavaşça der ki:\n\"Pisik, bu adam arkasında odun taşıdı, bize baktı. Şimdi sıra bize geldi. Benim arkama bineceksin, oraya gideceğiz. Ben sineceğim, sen pencereden içeri hopluyacaksın, bu yüzüğü almaya gayret edeceksin. Bu arada bana da ekmek getir. Tekneden filan çal getir, aç kalmayayım ben de.\"\n\"Olur, ben işi beceririm.\"\nOnlar oraya giderler. Tazı ağaçlar arasında sinip dururken pisik içeriye sıçrar. Kız pisiği görür görmez heveslenir. Orada da pek çok fare varmış, farelerden çok canları yanmışmış. Pisik fareleri kovalamaya başlayınca Arap köle de kız da bunu sevmeye başlarlar. Bunlar yatarken pisik de fareleri kovalamaya devam eder. Farenin biri der ki:\n\"Yahu, pisik kardeşlik, zorun ne, bizim kökümüzü mü keseceksin?\"\n\"Ya yüzüğün yerini haber vereceksiniz, ya sizin kökünüzü keseceğim.\"\nFarelerden biri der ki: \"Yemin et beni yemeyeceğine, ben yüzüğün yerini diyeyim.\"\n\"Seni yemeyeceğim, gel söyle.\"\n\"Yüzük, arabın dilinin altında uyuyor.\"\n\"Bunu nasıl çıkaracağız buradan?\"\n\"Senin gözlerin ışıklıdır, sen karyolanın alt tarafına dikil. Ben kuyruğumu götürür arabın burnuna sokarım. O zaman arap tıksırır, tıksırınca yüzük ağzından düşer, sen de yüzüğü alıp kaçarsın.\"\n\"Tamam.\"\nKararlaştırdıkları gibi yaparlar. Pisik yüzüğü kaptığı gibi tazının yanına gelir:\n\"Tazı kardeşlik, yüzüğü buldum, haydi gidelim.\"\nBunlar denizin ortasına gelince tazı başlar:\n\"Yüzüğü bana ver, yoksa seni denize atarım.\"\n\"Tazı, senin ağzın gevezedir, balık malık görürsün, \"hav\" deyip yüzüğü denize düşürürsün.\"\n\"Yahu olmaz, niye yapayım?\"\nZavallı pisik korkmaya başlar. Denize atılırsa boğulup gidecek. Mecbur kalır yüzüğü tazıya vermeye. Tazı balık görüp de \"hav\" deyince yüzük ağzından denize düşer ve bir balık kapıp yutar.\nBunlar işi berbat etmiş olarak karşıya çıkarlar. Keloğlan tazıya çalıp çevirmektedir. Pisik:\n\"Dur dur, tazıya çalma. Bu bana lâzım. Sen git, bu yüzüğü buluncaya kadar bekleyeceksin.\"\nBu ikisi balıkçıları takip etmeye başlarlar. Tor ile balık tutan balıkçıların yanına giderler. Meğer pisik yüzüğü yutan balığı tanıyormuş. Balıkçılar balıkları getirince tesadüfen o balık da torun içinden çıkar. Pisik nasıl o balığı alırsa kaçar gider. Arkasından koşarlarsa da biri bağırır:\n\"Canım bir balıktan ne çıkar, baksana yüzlercesi var.\"\nPisik hemen tazının yanına gelir, o da balığın karnını yarar. Hakikaten de yüzük balığın karnında. Yüzüğü alır almaz. Keloğlan'a kavuşurlar. Keloğlan yüzüğü parmağına takar takmaz yalar, hemen Araplar gelir:\n\"Yakalım mı, yıkalım mı?\"\n\"Ne yakın, ne yıkın. Denizin ortasındaki sarayın içindeki arap köle ve kızla beraber evvelki yerine, beni de annemin yanına.\"\nHemen bu işler yerine gelir. Keloğlan da padişahın yanına gider:\n\"Padişahım, işte hepsini topladım getirdim.\"\nPadişah gelir, bakar ki Arap köle ile kızı birbirlerine öyle sarılmışlar ki aralarına su döksen sızmıyor.\n\"Vay, durum böyle ha?\"\nPadişah kılıcını çeker çekmez ikisini de yatakta öldürür, küçük kızını da Keloğlan'a verir. Yeniden düğün kurulur.\nYeyip içip muratlarına ererler.",
+        ],
+      },
+      {
+        id: "06-oksuz-kiz",
+        baslik: "Öksüz Kız",
+        etiketler: ["üvey anne", "öksüz kız", "sihirli inek", "külkedisi"],
+        kaynak: "Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), \"Öksüz Kız\", kaynak dipnotu: Umay Günay, *Elazığ Masalları*, Erzurum: Atatürk Üniversitesi Yayınları, 1975. Resmî sayfa: https://www.kulturportali.gov.tr/portal/oksuzkiz. Metnin alındığı ayna: Sabah, \"MASAL OKU – Çocuklar İçin En Güzel… Masal, Öykü ve Hikaye Oku\" (7 Aralık 2023), https://www.sabah.com.tr/yasam/masal-oku-en-guzel-kisa-uzun-masal-oyku-ve-hikye-oku-masallar-oykuler-ve-hikyeler-dinle-5359191 (erişim 29 Ekim 2026)",
+        metin: [
+          "Bir varmış bir yokmuş, bir baba, bir anne bir de kızları varmış. Bir gün anne ölmüş, yerine analık gelmiş. Her gün bir kızı yazıya göndermiş. Eline de bir dilim arpa ekmeği verirmiş. Çocuk ağlaya ağlaya gidermiş, ne arpa ekmeğini yiyebilirmiş ne de yutabilirmiş. Bir gün yazıya götürdüğü inek dile geliyor, diyor ki:",
+          "\"O ekmeği getir ben yiyeyim. Sen gel benim kulağıma gir, orada güzel yemekler var, onları ye.\"",
+          "O günden sonra, kız arpa ekmeğini ineğe veriyor, kendiside ineğin kulağına girip güzel yemekler yiyor. Bu analığında bir kızı oluyor. Analık bakıyor, üvey kızı günden güne şişmanlıyor, güzelleşiyor, kendi kızına yumurtalar içirtip tereyağlar yedirdiği halde üvey kızı gibi olmuyor. Bunun için bir gün de kendi kızını yazıya gönderiyor. Ona da bir dilim arpa ekmeği veriyor. Üvey kızı evde alıkoyuyor. Kız gidiyor, yazıya, acıkıyor. Arpa ekmeğini yiyor, emmek boğazında kalıyor, gözleri yaşarıyor. Analığın üvey kıza neler ettiğini bildiği için inek hiç sesini çıkartmıyor. Kız eve geliyor, diyor ki:",
+          "\"Anne anne, beni daha gönderme, ben o ekmeği yiyemiyorum. Gene o kızı gönder, ben az kalsın ölüyordum.\"",
+          "Ertesi gün analık üvey kıza biraz pamukla bir iğ veriyor, diyor ki:",
+          "\"Bugün bunu eğir, makara ipliği gibi yap.\"",
+          "Kız alıp geliyor, pamukla iğe bakıp ağlıyor, inek soruyor:",
+          "\"O ne, neden ağlıyorsun?\"",
+          "\"Analığım dedi ki, bunu makara ipliği gibi eğir.\"",
+          "\"Getir o pamuğu, ben yiyeyim, sen de yanımda otur sar.\"",
+          "Kız pamuğu ineğe veriyor, inek pamuğu yutuyor. Kulağından incecik makara ipliği gibi çıkartıyor. Kız da sarıyor. İpliği eve götürüyor, bu kız artık hepsinin diline düşüyor, Bu kız böyle güzel ip eğiriyor diye. Analık kızına diyor ki:",
+          "\"Bak kızım, o nasıl herkesin gözüne giriyor, bugün de sen al pamuğu götür eğir.\"",
+          "Kız pamuğu alıp gidiyor, kalın kalın eğiriyor. Tabi hiç pamuk iğde eğirilir mi? Eve geliyor, annesine diyor ki:",
+          "\"Anne ben eğiremedim?\"",
+          "\"Sen yapamamışsın, bak o kız inek otarıyor, hem şişmanlıyor, hem de pamuk eğiriyor.\" Analık inekten şüpheleniyor, kocasına diyor ki:",
+          "\"Bu ineği keselim.\"",
+          "\"Nasıl keselim, biz onun sütünü içiyoruz, yoğurdunu yağını yiyoruz.\"",
+          "\"Yok keseceksin.\"",
+          "Kadın sonunda kocasını kandırıyor. İneği kesmeğe karar veriyorlar. Bu öksüz kız gidip ineğin yanına oturuyor, ağlıyor. İnek soruyor. \"Neden ağlıyorsun.\"",
+          "\"Seni kesecekler, ben ne yapacağım?\"",
+          "\"Beni kestikleri zaman, ben etimi onlara haram edeceğim, onlar yiyemeyecekler, onlara acı gelecek. Sana da şeker gibi gelecek, sen ye. Kemiklerimi de bir beyaz patiskaya sar, benim yemliğimin altına koy.\"",
+          "İneği getirip kesiyorlar, eti bunlara acı geliyor, yiyemiyorlar. Kıza etler şeker gibi geliyor, o yiyor. Kemikleri toplayıp beyaz patiskaya sarıyor, yemliğin altına gömüyor. Aradan bir iki ay geçiyor. Bir padişah evleniyormuş, bunlar da davetiye kâğıdı geliyor. Analık kendi kızını beziyor, düğüne gitmeden evvel üvey kızına da diyor ki:",
+          "\"Bu kazanın içini biz gelene kadar gözyaşı ile dolduracaksın.\"",
+          "\"Ben bunu nasıl gözyaşıyla doldurayım?\"",
+          "\"Dolduracaksın işte.\"",
+          "Bir teneke buğdayla bir teneke mercimeği karıştırıyor, kıza diyor ki:",
+          "\"Bunları tek tek ayıracaksın. Biz iki güne kadar geleceğiz, sen hem bunları ayıkla, hem de kazanı göz yaşınla doldur.\"",
+          "Onlar gidiyorlar, bu kız da oturup ağlıyor. Ne kadar ağlasın ki kazan dolsun. O taraftan da bir tuzcu geçiyormuş, ağlama sesini duyunca, soruyor:",
+          "\"Ne ağlıyorsun kızım?\"",
+          "\"Analığım dedi ki, sen bunu gözyaşınla dolduracaksın.\"",
+          "\"Al kızım, al bir ölçek tuz iki teneke de su koy, işte sana göz yaşı. Göz yaşı da tuzlu.\"",
+          "Neyse gözyaşı oluyor, oturuyor mercimeklerle buğdayları ayıklıyor. Kapıdan kalbur satan gurbetler geçiyor, bundan ekmek istiyorlar, bu da veriyor, diyor ki:",
+          "\"Analığım bunları ayıkla dedi, ayıkladım ama bitmiyor.\"",
+          "\"Getir sana eliyelim.\"",
+          "Eliyor hep buğdaylar altına iniyor, mercimekler üste kalıyor, kızın aklına ineğin kemikleri geliyor. Yemliğe gidip kemiklere bakıyor, orada altın işlemeli elbiseler, atlar, ne arasan var. Kız hemen giyinip ata biniyor doğru düğüne gidiyor. Orada bakıyor analığı ile bacısı ayakkabılığın içinde oturuyorlar. Bu gidince herkes bunu padişahın kızı zannediyor, bunu karşılayıp oturtuyorlar. Biraz oturuyor, bakıyor analığı ile bacısının dönme zamanı hemen onlardan önce kalkıyor. Yolda gelirken aceleden ayakkabısı çeşmeye düşüyor. Bu eve geliyor, üstündekileri çıkarıp saklıyor. Analığı da eve geliyor, bu soruyor:",
+          "\"Nasıl abla düğün keyifli miydi?\"",
+          "\"Ya çok keyifliydi hele görseydin bir de padişahın kızı geldi, karşıladılar, o kadar kıymet verdiler ki, düğün çok güzeldi, o kız da çok güzeldi.\"",
+          "Analık kendi üveyi olduğunu bilmiyor. Padişahın oğlu atını çeşmeye götürüyor, orada kızın ayakkabısını buluyor. Diyor ki:",
+          "\"Bu ayakkabı kimin ayağına olursa ben onu alacağım.\"",
+          "Her tarafı gezdiriyorlar, kiminin ayağına küçük geliyor, kiminin ayağına büyük geliyor. O kızın ayağına tam geliyor. Analığı az kalıyor patlaya. Düğün yapıyorlar, kızı bindirip götürüyorlar. Yiyor içiyor, muradına geçiyor.",
+        ],
+      },
+      {
+        id: "07-korkak-adam-ve-devler",
+        baslik: "Korkak Adam ve Devler",
+        etiketler: ["dev", "kurnazlık", "korkak kahraman", "mizah"],
+        kaynak: "Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), \"Korkak Adam ve Devler\", derleyen Salim Dalkıran, Türk Folklor Araştırmaları Dergisi, 1960, sayı 130. Resmî sayfa: https://www.kulturportali.gov.tr/portal/korkakadamvedevler. Metnin alındığı ayna: Sabah, \"MASAL OKU – Çocuklar İçin En Güzel… Masal, Öykü ve Hikaye Oku\" (7 Aralık 2023), https://www.sabah.com.tr/yasam/masal-oku-en-guzel-kisa-uzun-masal-oyku-ve-hikye-oku-masallar-oykuler-ve-hikyeler-dinle-5359191 (erişim 29 Ekim 2026)",
+        metin: [
+          "Evvel zaman içinde, kalbur saman içinde, deve tellâl iken, pire berber iken ben babamın beşiğini tıngır mıngır sallar iken bir adam varmış. Bu adam o kadar korkakmış ki ayakyoluna dahi karısı götürürmüş. Bir gün akşam bu adam yine sıkışmış ve karısına yalvarmış yakarmış adamın bu hali kadının canına tak demiş. Nihayet kadın adamı ayakyoluna götürmüş ve adamı içeriye kapatmış, kapıyı da kilitlemiş gitmiş, adam da tabii ayakyolunda kalmış. Adam, yalvarmalarının para etmeyeceğini anlayınca, oradaki bir pencereden dışarıya çıkmayı becermiş. Fakat eve gidemeyeceği için başka bir yere gitmiş. Az gitmiş, uz gitmiş, dere tepe düz gitmiş, altı ay bir güz gitmiş ve nihayet büyük bir saraya varmış. Sarayın kapısını açıp içeriye girmiş. Bir de ne görsün? Büyük bir oda, ortada kırk tane kazan kaynıyor ve etrafında da kırk tane dev sohbet ediyor. Bunun geldiğini gören devler hayret etmişler ve devlerin en büyüğü, herkes bizim izimizi, tozumuzu görünce kaçar. Sen nasıl korkmadan bizim evimize girebildin, demiş. Adam da demiş ki: Hay yavrularım senelerdir sizi arıyorum ve nihayet çok şükür bulabildim. Çünkü ben sizin dedenizim, siz bu halime bakmayın, artık ihtiyarladım. Geçmiş, baş köşeye oturmuş. Devler de inanarak dedelerine hoş geldin demişler. Adam artık orada yerleşmiş kalmış. Bir gün yatmaya gittiğinde devler toplanarak dedemiz artık gitmiyecek gelin biz gece yarısı gidip onu baltalarımızla öldürelim, demişler. Bunu da bizimki duymuş ve onların haberi yokken yatağının içine koca bir kütük koymuş, başlığını da kütüğe giydirmiş ve kendisi de yüklüğün içine saklanmış. Gece yarısı olmuş, devler gelmişler, karanlıkta kütüğe dedelerine vuruyoruz zannıyla vurmaya başlamışlar ve iyice yorulunca artık ölmüştür diye odalarına çekilmişler. Onlar gidince adam hemen yerinden çıkmış, odun gamgalarını, bütün küllükleri toplamış ve dışarıya bir yere atmış, sonra gelmiş yerine yatmış. Sabah da her zamanki gibi kalkmış ve bu gece beni pireler de bir türlü uyutmadı, demiş. Devler onun bu sözlerini duyup ölmediğini görünce, müthiş korkmaya başlamışlar. Yine bir gün yatmaya gidince devler toplanmışlar. \"Yarın bir yarış tertip edelim, bu bir yürüme yarışı olsun, kim yürürken daha çok toz çıkarırsa ona bir çuval altın verelim. Eğer dedemiz kazanmazsa buradan gitsin\" demişler. Bunu da duymuş ve onlar görmeden, giyeceği kendi çizmelerine toz doldurmuş. Ertesi gün devlerin en büyüğü dedelerine yarış yapılacağını söylemiş ve yarış başlamış. Devler hem hızlı yürüyor hem de toz çıkarıyorlarmış, dedeleri ise çizmelerine toz doldurduğu için onlardan daha çok toz çıkarıyormuş. Bunun üzerine \"Oğullarım gördünüz mü ben ihtiyarım ama sizden daha kuvvetliyim demiş. Yarışı da kazanmış. Devler demiş ki: Dede yarışı kazandın, sana bir çuval altını verelim, sen de buradan git. O da, yok yavrularım, ben sizi zor güç buldum, artık bir daha bırakmam demiş.",
+          "Devler dedelerinden kurtulabilmek için bir çare düşünmüşler. Bu da şuymuş: Ertesi gün bir yarış daha yapacaklarmış, bu yarışta kim taşı sıkıp un yapabilirse ona bir çuval altın verilecekmiş, dedeleri bunu da konuşurlarken duymuş ve gizlice mutfaktan bir peynir bulmuş ve cebine saklamış. Ertesi gün buna yarışı söylemişler ve yarış başlamış. Dedeleri kendine iki yassı taş bulmuş ve kimse görmeden peyniri de arasına koymuş ve bakın evlâtlarım, taşı un etmek değil, taşın suyunu bile çıkarıyorum demiş. Tabii bu yarışı da kazanmış. Devler buna demişler ki, \"Geçen seferki altınlarını da verelim şimdikini de verelim. İki çuval altının olur, seni de altınlarını da evine kadar dalımızda götürelim. Biraz nazlanmış, fakat sonra razı olmuş. Devler de bunu altınlarıyla birlikte dallarında evine götürmüşler. Kapısının önüne koyup dönmüşler. Adam evinin kapısını çalmış, kim o diyen karısına ben geldim, demiş. Karısı da mendilini göster, kocam olduğunu bileyim, demiş, Bu da göstermiş, karısı kocasının geldiğini anlayıp içeriye almış, adam altınları da içeriye getirmiş ve karısına \"Sen beni ayakyoluna kapatmasaydım, bunları bulamayacaktık\" demiş ve başından geçenleri anlatmış, yemiş içmiş muratlarına ermişler.",
+        ],
+      },
+      {
+        id: "08-kirkinci-oda",
+        baslik: "Kırkıncı Oda",
+        etiketler: ["yasak oda", "kaplan adam", "dev", "sihirli post"],
+        kaynak: "Naki Tezel, *Türk Masalları* (ilk baskı Millî Eğitim Basımevi, 1971; ayrıca Kültür Bakanlığı Yayınları, 1990 ve Alfa Basım Dağıtım, 2019). Çevrim içi tam metin: Muzip Masal Cini, \"Kırkıncı Oda-Naki Tezel (Türk Masalları)\", https://muzipmasalcini.com/kirkinci-oda-naki-tezel-turk-masallari/ (yayın 3 Mart 2025). KTB e-Kitap'ta da bir \"Kırkıncı Oda\" PDF'i var: https://ekitap.ktb.gov.tr/Eklenti/10771,kirkinciodapdf.pdf?0",
+        metin: [
+          "Bir varmış, bir yokmuş… Evvel zaman içinde, kalbur saman içinde, büyük bir orman kenarında, küçük bir kulübede bir aile oturuyormuş. Erkek, balta girmemiş ormandan odun keserek uzak şehirlere götürüp satar, böylece ailesine bakarmış. Kadın da, ormandaki çağlayandan eve su taşır, ağaçlardan meyve toplar, küçük tarlalarında yetiştirdikleri sebzelerden yemek yaparmış.",
+          "İşte, kuş cıvıltıları, su şırıltıları, bin bir çeşit çiçek kokuları ve gözün alabildiğine uzanan yeşillikler arasında yaşayan bu mutlu ailenin, bir gün topaç gibi bir oğlu olmuş.",
+          "Çocuk dünyaya geldiği zaman, adam gene uzak şehirlerde bulunduğu için, bütün işler kadına kalmış. Kadıncağız ne yapsın, o haliyle yataktan kalkmış, bir koluna çocuğunu sıkıştırmış, bir eline de tahtadan yapılmış kaplarını alarak su kenarına gitmiş.",
+          "Çocuğunu çimenler üzerine bırakmış. Kabını su ile doldurmak üzere çağlayanın altına uzatmış. Hasta yataktan kalktığı için, elleri, ayakları titriyor, gözleri kararıyormuş. Bir aralık, kolunun kuvvetten düştüğünü hissetmiş. Gözleri adamakıllı kararmış, kendisini kaybederek çağlayana yuvarlanmış. Ne olduğunu anlayamadan suların akışına kapılmış, sürüklenerek gitmiş…",
+          "Hiçbir şeyden haberi olmayan küçük yavru, sanki başına gelenleri anlamış gibi durmadan ağlıyor, bağırıyor, yırtınıyormuş… Fakat onun üzüntüsünü, derdini anlayan olmamış. Ana sütünü doğar doğmaz ancak birkaç yudum emmiş olan çocuk, bu tek gıdasından artık tamamen uzak kaldığını nereden bilsin!",
+          "Sevimli yavru, böyle saatlerden beri durmadan ağlarken, ormanda kendisine av arayan bir dişi kaplan, onun sesini duymuş, koşarak oraya gelmiş. Bakmış ki, ufacık bir canlı… Kendi doğurduğu yavrularına benziyor… Hemen üzerine eğilip, şurasından, burasından koklamış. Yavrunun haline acımış. Memelerini bu küçük yaratığın ağzına uzatarak sütünden emzirmeye başlamış. Annesiz kaldığından habersiz olan yavru, kaplanın memelerine öyle bir yapışmış ki, karnı iyice doyuncaya kadar emmiş, emmiş…",
+          "Kaplan, yavruyu almak için gelen giden bulunmadığını görünce, onun kimsesiz olduğunu anlamakta güçlük çekmemiş. Ağzı ile kundağından yakaladığı gibi onu inine, yavrularının yanına götürmüş.",
+          "Küçük yavru, o günden sonra, kaplan yavrularıyla düşe kalka, kaplan sütü eme eme büyümeye başlamış. O kadar çabuk büyüyor, büyüdükçe de o kadar kuvvetleniyormuş ki, bu hal, kaplan annenin bile gözünden kaçmamış. Bu insan yavrusu, beraber büyüdüğü kaplan yavrularının sırtını kolaylıkla yere getiriyor, ava çıktıkları zaman, kardeşlerinden daha başarıyla avlanıyormuş.",
+          "Bu, ormanda bulduğu yavrunun günden güne kuvvetlenmesi, boyunun uzaması, kendilerinden daha kolay avlanması dişi kaplanı düşündürmeye başlamış. Hem bu yaratık, hiç de kendi yavrularına benzemiyormuş.",
+          "“Ya bu bizim ocağımızı söndürürse” diye de korkuyormuş. Yavaş yavaş, onun, ormanda üzerlerine ateş eden insanlara benzediğini de fark etmiş. Kendilerine fenalığı dokunmadan, onu aralarından uzaklaştırmanın çaresini aramaya koyulmuş.",
+          "Bir gün, gene hep birlikte ava çıkmışlar. Kaplan anne, ona bir ağaç dibi göstererek orada beklemesini işaret etmiş. Kendisi yavrularını alarak, uzaklara, çok uzaklara gitmiş. Gidiş o gidiş. Saatler geçtiği halde, kaplan annesiyle kaplan kardeşlerinin dönmediğini gören kaplan çocuk, ormanda onları aramaya koyulmuş. Sağa koşmuş, sola koşmuş, oraya gitmiş, buraya gitmiş, yok… yok… Yorularak inine gidip uzanmış, uyuya kalmış…",
+          "Bu sıralarda, o memleketin şehzadesi de, adamlarıyla birlikte, geyik avlamak için ormanda dolaşıyormuş. Adamlarından biri, heyecanla koşup gelerek:",
+          "“Aman şehzadem,” demiş, “şurada bir kaplan ini gördük. İçinde kocaman bir insan yatıyor… Duruşundan hepimiz korktuk… Doğrusu hiç de böyle adam görmemiştik!”",
+          "Şehzade, bu kocaman adamı merak etmiş. Hep birlikte oraya gitmişler. Bakmış ki, insan azmanı birisi, kaplan ininde yatıyor. Bu adamı dikkatle incelemeye başlamışlar. Kollarının kuvveti, pazularının şişkinliğinden anlaşılıyor, ellerinin bir kaplan pençesi gibi kuvvetli ve yırtıcı olduğu da, ilk bakışta seziliyormuş. Vücudu, bacakları, kolları kıllarla kaplı olan bu iri insanın, gür saçlarıyla uzun sakalları birbirine karışmış bir haldeymiş.",
+          "Kendilerine pek benzemeyen bu insandan, şehzadenin adamları fena halde kokmuşlarsa da, şehzade, nedense ondan pek hoşlanmış. Hemen adamlarına emir vererek, “Kaplan adam” adını takıverdiği bu yaratığı sımsıkı bağlatmış. Derin derin uyuyan Kaplan adam, hiç bir şeyin farkında değilmiş. O, sadece gök gürültüsüne benzeyen horultularla uyuyormuş.",
+          "Hemen şehzadenin altı atlı av taşıma arabasını getirtmişler. 20 kişi, birer tarafından tutarak Kaplan Adam'ı yavaşça kaldırmışlar, arabaya koymuşlar, doğruca saraya götürmüşler.",
+          "Padişah, o gece, bu, hayvana benzeyen korkunç yaratıktan hiç de hoşlanmamış. Bu yüzden oğluna darılmış da…",
+          "Kaplan Adam, uyandığı zaman, kendini kalın iplerle bağlı bir halde yabancı bir yerde görünce, fena halde kızmış. Kaplan gibi kükremeye, ipleri koparmaya başlamış. İpleri tamamen kopardıktan sonra, bulunduğu yerden kaçmak için koşmaya hazırlanırken, kendisinin büyük bir demir kafesin içinde olduğunu görmüş, büsbütün hiddetlenmiş. Durmadan bağırıyor, demir parmaklıkları var kuvvetiyle sarsıyormuş. Sonra, böyle yapmakla kurtulamayacağını anlamış, çaresiz susmuş. Kafesin içine büyük bir kapla bırakılmış olan suyu bir hamlede içmiş. Sonra, başka kaplarda duran çeşitli yiyecekleri de birbiri arkasından yemiş. Yedikleri pek tatlı gelmiş. Karnı da doyduğu için hiddeti biraz geçmiş, uslu uslu oturmaya başlamış.",
+          "O sırada, şehzade, gülerek kafesin önüne gelmiş. Sakin sakin oturan Kaplan Adam'a işaretle bir şeyler söylemeye başlamış.",
+          "Kaplan Adam, görünüşüyle tıpkı kendisine benzeyen şehzadenin güler yüzünden de, kulağına yumuşak gelen sözlerden de son derece hoşlanmış. Şehzade söyledikçe, o, adeta bağırır gibi kahkahalar atarak gülüyormuş…",
+          "Bu, günlerce, haftalarca, aylarca böyle devam etmiş durmuş… Kaplan Adam, bulunduğu yere, etrafındakilere, önüne konulan yemeklere her gün biraz daha alışıyormuş. Hatta söylenilen sözleri bile yavaş yavaş anlamaya başlamış.",
+          "Onu zamanla kafesten de çıkarmışlar. Artık herkese iyice alıştığı için etrafta serbestçe dolaşıyor, bilhassa şehzadeden hiç ayrılmıyormuş. Günler geçtikçe, bazı kelimeleri iyiden iyiye tekrarlamaya, daha sonraları da kısa cümlelerle konuşmaya başlamış.",
+          "Aradan birkaç yıl geçince, Kaplan Adam, herkes gibi düzgün konuşmayı öğrenmiş. Elbise giyebiliyor, yemek yiyor, ata biniyor, geziyor, ok atıyor, kısaca her şey yapabiliyormuş. Onun diğer insanlardan farkı, sadece çok iri ve çok kuvvetli oluşu imiş. Kaplan Adam'dan ilk geldiği sıralarda hoşlanmayan padişah da, artık onu seviyor, kendi oğlundan ayırt etmiyormuş.",
+          "Günlerden bir gün, komşu devletlerden birinin padişahı, bunlara savaş açmış. Padişah hemen askerlerin arasına katılarak düşmanla savaşmaya gitmiş.",
+          "İki taraf arasındaki savaş o kadar çetin olmuş ki, günlerce, haftalarca sürmüş. Her iki taraf da, ne kadar ölü, yaralı verdiğini bilmiyormuş.",
+          "Kaplan Adam, askerlerin önünde, durmadan ok atıyor, yanına kimseyi yaklaştırmıyormuş. Oklar bittiği zaman atından inerek düşmana taşla, sopa ile saldırmış. Düşman askerleri onun iriliğinden, kuvvetinden, cesaretinden, önüne geleni bir dokunuşta yere serişinden o kadar korkmuşlar ki, savaş meydanını bırakarak kaçmaktan başka çare bulamamışlar. Fakat Kaplan Adam onların arkasını bırakır mı? Askerlerle birlikte, düz yollarda at üzerinde, sarp yerlerde koşarak, tırmanarak peşlerine atılmış. Bir aralık, askerlerin komutanı, bir düşman okuyla yere cansız yıkılınca, komutayı Kaplan Adam ele almış. Zaten yenilgi halinde olan düşman, alabildiğine kaçmış. Kaçamayanlar da, Kaplan Adam'ın komutasındaki askerler tarafından tutsak edilmişler.",
+          "Zafer kazanılarak Kaplan Adam'ın komutasındaki askerler zafer şarkılarıyla şehre dönünce, başta padişah olduğu halde, bütün halk, onları sevgi gösterileriyle karşılamış.",
+          "Kaplan Adam, doğruca gelip padişahın önünde diz çökmüş. Padişah da memleketine kazandırdığı büyük zaferden dolayı Kaplan Adam'ın alnından öpmüş. Başkomutanlık kılıcını ona uzatarak:",
+          "Bundan sonra, demiş, ordumuzun başkomutanı sensin!\nSevinç içinde olan halk, Kaplan Adam'ı omuzlarda taşımış. Saraya kadar onu öyle götürmüşler.",
+          "Zafer üzerine, padişah, biraz dinlenmek için dost memleketlerden birine gitmeye karar vermiş.",
+          "Kaplan Adam'ı yanına çağırarak:",
+          "Artık, demiş, bizim için düşman tehlikesi kalmadı. Son günlerde çok da yoruldum. Mısır ülkesine kadar gidip bir gezinti yapmak, Mısır padişahına birkaç ay misafir olmak istiyorum. Ben olmadığım zamanlarda vekilimsin!\nKaplan Adam, bunun üzerine:",
+          "Padişahım, demiş, gösterdiğiniz itimada ve yakınlığa teşekkür ederim. Ama ancak şehzade sizin vekiliniz olabilir. Bu iş onun hakkıdır...\nPadişah, gülerek karşılık vermiş:",
+          "Doğru, doğru ama, onu da beraber götüreceğim. Hem memleketin başında senin gibi bir kahraman bulunursa, hiçbir düşman topraklarımıza saldırmaya cesaret edemez. Benim de gözüm arkada kalmaz, gönlüm rahat eder.\nNe ise… Yolculuk hazırlığına başlanmış. Güneşli bir bahar gününde, atlas ve ipek kumaşlarla süslenmiş, her birini altışar atın çektiği on altın araba, Mısır'a doğru yola çıkmış.",
+          "Onlar gidedursunlar, biz gelelim Kaplan Adam'a:",
+          "Kaplan Adam, artık bir padişah vekili olduğu için memleketin bütün işlerine bakıyor, her şeyi düşünmek zorunda kalıyormuş…",
+          "Hele, içini daima burkan bir şey varmış ki, ondan kendini bir türlü kurtaramıyormuş. O da, yola çıkmadan önce padişahın kendisine bıraktığı kırk anahtar imiş.",
+          "Padişah, bu anahtarları kendisine verirken:",
+          "Bunlar sarayımızın kırk sihirli kapısına aittir, demiş. Senden ricam şu: Otuz dokuz kapıyı açabilirsin. Fakat kırkıncı kapıyı sakın açmayasın!\nİşte, Kaplan Adam'ı düşündüren de bu kırkıncı oda imiş. “ Acaba orada ne var da Padişah açmamı istemedi” diye düşünüp duruyormuş… Hatta bu yüzden gözüne uyku bile girmiyormuş. Gidip kırkıncı odayı açamıyormuş da… Çünkü verilen sözü tutmamanın ayıp bir şey olacağını düşünüyormuş. Ama içinden gizli bir kuvvetin kendisini zorlamasına da mani olamıyormuş.",
+          "Bakmış ki, olacak gibi değil… Bir gün, sarayda hiç kimsenin bulunmadığı bir sırada, anahtarları eline alarak odaları açmaya başlamış.",
+          "İlk odanın kapısını açtığı zaman kendisini adeta rüyada sanmış. Bin bir renkli, bin bir kokulu çiçeklerle dolu cennet gibi bir bahçede kelebeklere benzeyen küçücük kanatlı peri kızları, o çiçekten bu çiçeğe uçup duruyorlar, güneşin parlak ışıkları altında şen kahkahalar atıyorlarmış. Kaplan Adam, onları uzun uzun seyrettikten sonra, kapıyı kapamış, gidip ikinci kapıyı açmış. Önüne açılıveren güzel bir ormanlıkta, kocaman kocaman devlerle, minicik minicik cüceler top oynuyorlarmış. Devlerin de, cücelerinde o kadar cana yakın halleri varmış ki, Kaplan Adam, nerede ise onların yanına gidip aralarına katılacakmış. Farkında olmadan kapıdan içeriye adımını atarken, anahtarların şangırtısı aklını başına getirmiş, padişah vekili olduğunu, kendisini birçok işlerin beklediğini, hele gidip top oynamanın kendisine hiç de yakışmayacağına hatırlayarak vazgeçmiş… Geriye çekilerek kapıyı kapamış. Hemen üçüncü kapıyı açmış. Acaba rüyamı görüyorum diye gözlerini ovuşturmuş. Hayır, gördüğü rüya değilmiş. Değilmiş ama, böyle bir şeyin hakikat olabileceğini de bir türlü aklına sığdıramıyormuş. Gözlerini bir daha ovuşturarak bakmış. Evet, rüya değil, gördüğü hakikatmiş. Gözün alabildiğine sayısız tepecikler halinde, ışıl ışıl altın paralar, işte karşısında duruyormuş.",
+          "Doğrusu, ne yapacağını şaşırmış. Hatta bir an için kırkıncı odayı unutmuş bile… Kendi kendine:",
+          "Bu kadar altın para dünyayı satın alabilir!, diyormuş. Sonra da:",
+          "Neme lazım, demiş, insanın alın teriyle kazandığı parası olmadıktan sonra, değeri mi olur… Sağlık her şeyden üstün. İnsan çalışıp kazanmalı, öyle yemeli… Başkasının parasından bana ne!",
+          "Kapıyı kapayarak kilitlemiş. Dördüncü odayı açmış. Karşısına, bu sefer de etrafı yemyeşil, yüksek ağaçlarla çevrili, baştanbaşa renkli mermerlerden yapılmış bir bahçe çıkmış. Bahçenin ortasında kristal camdan, kocaman bir havuz varmış. Yüksek ağaçların üzerinden uçarak gelen kar gibi beyaz güvercinler, birer birer havuzun kenarına sıralanıyorlarmış. Sonra, gene sıra ile havuzun sularına dalıyor, ayın on dördü, günün on beş gibi güzel birer peri kızı olarak meydana çıkıyorlarmış.",
+          "Havuzun ortasındaki kocaman fıskiyeden şemsiye şeklinde dökülen suların altında, peri kızları, şakalaşa şakalaşa, gülüşe gülüşe oynadıktan ve yüzdükten sonra, tekrar birer güvercin olup uçuyorlarmış.",
+          "Kaplan Adam onları da biraz seyretmiş. Bu esrarlı odalar, artık onun başını döndürmeye başlamış. Çünkü hangi odanın kapısını açsa, hiç hatırına gelmeyen şeylerle karşılaşıyor, hayran hayran bakmaktan kendini alamıyormuş.",
+          "Böylece, diğer odaları da açmış. Birinde, belinden aşağısı balık şeklinde peri kızları, bir başkasında, göz kamaştırıcı, altın ve gümüşten yapılmış saraylar, köşkler görmüş. Diğer bir odada aslanlar padişahına, başka bir odada ise, karıncalar hükümdarına rastlamış.",
+          "Nihayet bütün odaları aça aça kırkıncı odanın önüne gelmiş. Gelmiş ama, heyecanı da son derece artmış. O koca adamın kalbi küt küt atıyor, yanlış bir iş yapmaktan pek fazla çekiniyormuş.",
+          "Padişah vekili olduğunu hatırlayınca, kapıyı açmakta bir zarar görmemiş. Anahtarı sokup kilidi açtıktan sonra, halkasından tutup kapıyı çekmiş.",
+          "Burası öteki yerlere hiç benzemiyormuş. Ufacık, oldukça da karanlık bir oda imiş. Odanın bir köşesindeki direkte, Arap bir adam, kollarından, ayaklarından bağlı olarak duruyormuş.",
+          "Kaplan Adam, önce bundan bir şey anlamamış. Kapıyı açarak sormuş:",
+          "Kuzum senin burada işin ne? Seni ne yaptın da böyle bağladılar?\nArap, hem ağlamaya, hem de anlatmaya başlamış:",
+          "Ben bu sarayda uşaktım. Padişah hastalandı. Hastalığının çaresini bulamadılar. Bir gün, ihtiyar bir adam çıkageldi “ Kafdağı'nın arkasındaki kırmızı sulu dereden su getirilip içirilirse bir şeyi kalmaz” dedi. Bunun üzerine, padişah, kim bu sudan bir testi getirebilirse, on kese altın vereceğini ilan etti. Getiririm diye ortaya atılıp da getiremeyen olursa, onun hemen kafasını kestireceğini bildirdi. Yaşlı kadıncağız, suyu getirebileceğini söyleyerek gitti, ama eli boş döndü. Önüne devler çıkmış; suyu alamadan geri gelmiş. Padişah, kadının kafasının uçurulmasını emretti… Cellâtlık görevini de bana verdi. Ben öyle bir şeyi yapamayacağımı söyledim. Hem, zavallı bir kadını öldürmek haksızlıktı… Fakat padişah çok kızdı. Emrini dinlemedim, suçsuz olan kadıncağızı öldürmedim diye beni buraya bağlattı. İşte kusurum bu… Sen de olsan benim gibi yapmaz mıydın?\nArap durmadan ağlıyormuş. Onun bu hali Kaplan Adam'a dokunmuş. Anlattıklarına göre de onu suçsuz bulmuş. Hemen ipleri keserek onu serbest bırakmış. Arkasından da:",
+          "Eğer bana yalan söyledinse, elimden kurtulamazsın, demiş. Nerede olursan ol, ben seni bulurum!\nArap, Kaplan Adam'ın ayaklarına kapanmış. Gözyaşları içinde, doğru söylediğine yemin etmiş.",
+          "Sonra, var kuvvetiyle koşarak uzaklaşmış gözden kaybolmuş.",
+          "Aradan yıllar geçmiş, Kaplan Adam, Arap'ı hatırladıkça iyilik yaptığını, haksız yere hapsedilmiş bir adamı kurtardığını düşünerek memnun oluyormuş.",
+          "Bir gün, saraydaki çalışma odasında otururken, baş vezir elinde bir haber güvercini olduğu halde, içeriye girmiş. Güvercinin ayağında bir kâğıt bağlı imiş. Kaplan Adam hemen kâğıdı alarak okumuş. Bu, padişahın gönderdiği bir mektupmuş. Padişah, bu mektubunda, yolda olduklarını, birkaç güne kadar şehre varacaklarını haber veriyormuş.",
+          "Padişahı karşılamak için hazırlığa başlamışlar. Sarayın her tarafını temizlemişler. Tören programı düzenlemişler. Birkaç gün geçince, padişah ile şehzadeyi, sultanı ve yanlarındaki adamları getiren altın arabalar, şehre yaklaşmışlar. Kaplan Adam, vezirler, saray adamları, askerler ve halk, gelenleri törenle karşılamışlar.",
+          "Ertesi gün, Kaplan Adam, padişaha yaptığı işleri anlatmış. Sonra da kırk anahtarı getirip vermiş.",
+          "Padişah:",
+          "Söyle bakalım Kaplan Adam, demiş, kırkıncı odayı açtın mı?\nKaplan Adam'ı bir düşüncedir almış. Padişaha ne karşılık versin? Yalan söylese, doğru bir hareket yapmış olmayacak. Hem zaten faydasız. Padişah nasıl olsa anlayacak. Doğru söylese, ya padişah çok kızarsa?",
+          "Ne olursa olsun, doğru söylemeye karar vermiş:",
+          "Padişahım, demiş, bugüne kadar yalan söylemedim. Onun için gene yalan söylemeyeceğim. Evet, size söz vermiş olduğum halde, dayanamadım, içimden gizli bir kuvvet dürttü, kırkıncı odayı da açtım. Fakat pişman değilim… Haksız yere hapsettiğiniz Arap'ı kurtardım. Onu serbest bıraktım…\nPadişah gülmüş:",
+          "Doğru söylediğine çok memnun oldum, demiş. Bu yüzden yapmış olduğun kusuru da affediyorum. Ama iyilik yapayım derken nasıl bir hata işlediğini biliyor musun?\nKaplan Adam, şaşırmış, karşılık verememiş. Padişah, sözlerine devam etmiş:",
+          "Kırkıncı odada bağlı duran Arap, oraya haksız yere hapsedilmemişti. O, fena bir adamdı. Şehzadenin küçük ve sevimli kızı Bilge'yi kaçırmıştı. Aradık, taradık, sevgili torunumu bulamadık. Adamlarım Arap'ı yakalayarak getirdiler. Ben de torunumun bulunduğu yeri bildirinceye kadar, onu hapsettirdim. Anladın mı şimdi yaptığın hatayı?\nKaplan Adam, padişahın sözleri karşısında son derece şaşırmış. Yaptığı işin yanlışlığını anlamış. Şaşkınlığı geçtikten sonra:",
+          "Peki, ama padişahım, demiş, o kadar küçük bir kızı Arap niçin kaçırmış? Padişah:",
+          "Niçin olacak, diye karşılık vermiş, çocuğu yokmuş. Beyaz bir çocuğu alıp evlatlık yapmaya karar vermiş. Torunum Bilge'yi de kendisi için en uygun evlatlık görerek alıp kaçmış…",
+          "Arap'ın kendisine oynadığı oyundan dolayı Kaplan Adam'ın fena halde canı sıkılmış. Padişahın önünde diz çökerek:",
+          "Hakkınız var padişahım, demiş, bilmeyerek bir kusur işlemişim. Fakat ben o Arap'ın canını cehenneme yollamasını, sevgili torununuz Bilge'yi onun elinden kurtarmasını bilirim. Bana izin verirseniz, hemen Arap'ın peşinden gitmek istiyorum.\nPadişah, Kaplan Adam'a istediği izni vermiş. Bilge'nin babası şehzade de Kaplan Adam'la beraber gitmek istiyormuş.",
+          "Her ikisi de birer kat demir elbise yaptırmışlar. Ellerinde demir asa alıp, atlarının heybelerine de altın doldurarak yola çıkmışlar.",
+          "Az gitmişler, uz gitmişler… Dere tepe düz gitmişler… Geceler gündüzleri, gündüzler geceleri kovalamış… Ay Güneş'in, Güneş Ay'ın peşinden koşmuş… günler haftalarla, haftalar aylarla el ele tutuşmuş da gene Arap'ın bulunduğu yere varamamışlar…",
+          "Gide gide yorulmuşlar. Bir akarsu başında mola verdikleri bir sırada, gözlerine dağ başında kocaman bir mağara ilişmiş… Atların da kendilerinin de karınlarını doyurup, kana kana su içtikten, yeter derece de dinlendikten sonra, kalkıp yola koyulmuşlar.",
+          "Git gitmez misin? Git gitmez misin? Akşama doğru mağaranın bulunduğu yere varmışlar şehzade, mağaranın yanına yaklaşarak kapısından içeriye bakmış. Bir de ne görsün? Kocaman bir dev anası, yanar dağ gibi gürüldeyen, büyük bir ocağın karşısına oturmuş, tavanda asılı duran kazandaki yemeği pişiriyor. Hemen dönüp, atların yularını çözmekte olan Kaplan Adam'ın yanına gelmiş, gördüğü şeyleri heyecanla anlatmış.",
+          "Kaplan Adam gülmüş:",
+          "Bunda heyecanlanacak ne var, demiş, korkma, gel benimle!\nKaplan Adam önde, şehzade arkada, gidip mağaranın kapısından içeriye girmişler. Ocak başındaki ihtiyar dev anası, olduğu yerde adeta uyukluyormuş. Kaplan Adam, doğruca gidip asılı duran koca kazanı yakaladığı gibi bir hamlede yere indirmiş. Dev kepçesiyle yemekten alıp ağzına götürmüş.",
+          "Kazanın yere indiği zaman çıkardığı kaba sesten gözlerini açan dev anası, bakmış ki, iki insanoğlu… Birisi, öteki insanlar gibi ufak tefek… Ama öteki devler gibi iri cüsseli… Birkaç devin birlikte yere zor zoruna indirdikleri koca yemek kazanını kolaycacık indirdiğine bakılırsa, çok kuvvetli olsa gerek.",
+          "Tam bu sırada, kaplan Adam seslenmiş:",
+          "Heeey… İhtiyar… Ne yapıyorsun öyle?! Bir hoş geldin demek yok mu? Tanrı misafiri sayılırız.\n-",
+          "İhtiyar dev anası, görmüş ki, bu öyle bildiği insanoğullarına pek benzemiyor. Güzellikle konuşmaktan başka çare olmadığını düşünerek:",
+          "Kusura bakmayın, demiş, hem ihtiyarım, hem de gözlerim iyi görmez. Hoş geldiniz… Hoş geldiniz…\nKaplan Adam sormuş:",
+          "Burada senden başka kimse yok mu? Bizim karnımız aç, hem de yorgunuz, uykumuz var…\nİhtiyar, mağarayı inleten bir kahkaha atarak:",
+          "Olmaz olur mu, demiş, benim kırk tane aslan gibi oğlum var. Sabahleyin ava çıkmışlardı. Şimdi nerede ise gelirler… Hele siz oturun da, ben torunlarımla onlara haber salayım…\nSonra, yerinden kalkmış. İki tarafına sallana sallana mağaranın kapısından çıkmış, bitişikteki başka bir mağaraya gitmiş… Orada, torunlarına:",
+          "Haydi, çabuk koşun, babalarınıza haber verin, demiş, mağaramıza iki tane insanoğlu geldi. Ama bunlar eti yenecek cinsten değil. Geldikleri zaman ikisine de iyi muamele yapsınlar… Sonra karışmam!\nDev çocukları, koşarak babalarını çağırmaya gitmişler. Dev anası da dönüp Kaplan Adam'la şehzadenin bulunduğu mağaraya gelmiş.. Kocaman kocaman, tahtadan tabaklara kazandan doldurmuş, misafirlerin önüne koymuş. Onlar yemeklerini yerlerken, devler birer birer gelmeye başlamışlar. Şehzadenin korkudan lokmalar boğazında diziliyor, Kaplan Adam ise, gelenlere hiç aldırmadan yemeğini yiyormuş.",
+          "Devler, mağaradan içeriye girerlerken, bunlara güler yüzle:",
+          "Hoşgeldiniz!\nDiyorlarmış. Böylece, kırk dev de tamam olmuş. Yemek bittikten sonra, Kaplan Adam, yerinden kalkmış, koca yemek kazanını bir hamlede kaldırarak yerine asmış. Onun kuvvetine hayran olan devler çok iri insanoğlundan pek hoşlanmışlar. Ona:",
+          "Söyle bakalım, demişler, böyle nereden gelip nereye gidiyorsunuz? Bir derdiniz varsa, elimizden gelen yardımı esirgemeyiz…\nKaplan Adam, şehzadeyi göstererek:",
+          "Bir padişah oğludur, demiş, küçük kızı Bilge'yi kötü kalpli bir Arap kendisine evlat yapmak için kaçırdı. Kızı elinden kurtarmak, onun canını da cehenneme göndermek için yola çıktık. Bulunduğu yeri arıyoruz. Ah bir bulabilsek?!\nDev anası, öteden atılarak:",
+          "Aradığınız Arap'ı anladım, demiş. O, Geçitvermez Çay'ın öte yanındaki Sivri Dağ'ın arkasında bir köşkte oturur. Ama Geçitvermez Çay'ı da, Sivri Dağ'ı da bugüne kadar aşabilen çıkmadı. Biz bile oralara varamayız. Fakat sen, çok kuvvetli, gözü pek bir adama benziyorsun. Arkadaşın da seninle beraber giderse, bir daha geri döneceği şüphelidir.\nKaplan Adam, dev anasının sözlerini dikkatle dinledikten sonra:",
+          "Bana yardım ettiğin için sana teşekkür ederim, demiş. Ben nasıl olsa o ahlaksız Arap'ı ele geçiririm. Dönünceye kadar şehzade burada kalsın. Onu size emanet ediyorum. Eğer onun kılına dokunurdanız, padişahın bütün ordusunu emrime alır, üzerinize gelerek hepinizi yok ederim. Anladınız ya?\nDev anası gülmüş:",
+          "Kaplan oğlum, sen hiç tasalanma, demiş, biz yiğit insanlara dokunmayız. Sen de arkadaşında iyi kimselere benziyorsunuz. Bundan sonra hep dost kalacağız sen Arap'ı bulup gelinceye kadar arkadaşın yanımızda kalabilir. Onun vaktini hoş geçirmesi için elimizden geldiği kadar çalışacağız. Haydi, yolun açık olsun!\nKaplan Adam, şehzade ile kucaklaştıktan sonra, dev anasına ve dev çocuklara ayrı ayrı veda ederek yola çıkmış.",
+          "Dağlarda, bayırlarda atını dört nala sürüyor, adeta bir kuş gibi uçuyormuş geçtiği yollarda nal seslerinden ürken geyikler, karacalar, şuraya, buraya kaçışıyorlar, tavşanlar birer deliğe siniyorlar. Kuşlar konduklar ağaçlardan sürüler halinde kalkarak uzaklaşıyorlarmış.",
+          "Böylece. Gitmiş, gitmiş, gitmiş… Akşam olmuş, hava kararmış. Ormanda bir ağacın üzerine çıkarak gecelemiş.",
+          "Sabah olunca, buz gibi bir pınarda yüzünü yıkamış. Ağaçlardan meyve toplayarak karnını doyurmuş. Otlarla karnını doyuran atını da bir güzel suladıktan sonra, yola koyulmuş. Az gitmiş, uz gitmiş, dere tepe düz gitmiş. Konarak, göçerek bir çeşme başına varmış. Orada bakmış ki, üç çocuk kavga ediyor. Hemen yanlarına giderek:",
+          "Çocuklar, niçin kavga ediyorsunuz, demiş, babanızın mirasını mı paylaşamıyorsunuz?\nİçlerinden biri:",
+          "Öyle ya, demiş. Nasıl bildin?\nKaplan Adam şaşırarak:",
+          "Ne bileyim, demiş, öyle söyledim işte. Demek miras kavgası ediyorsunuz. Peki, paylaşamadığınız şey nedir?\nÇocuk, şöyle demiş:",
+          "Biz üç kardeşiz. Babamız öldü. Bize bir koyun postu ile bir kamçı bıraktı. Bu iki paylaşamadığınız eşyayı aramızda bir türlü bölüşemiyoruz. Sen bu işe bir çare bulabilir misin?\nKaplan Adam:",
+          "Bundan kolay ne var, demiş, bu koyun postu ile kamçıyı pazarda satarsanız ikisine bir altın bile vermezler. Alın ben size on beş altın veriyorum. Her birinize beşer altın düşer. Size de bu altın uzun zaman için yeter. Nasıl, oldu mu?\nÇocukların üçü de sevinerek Kaplan Adam'ın etrafını almışlar. Onun verdiği beşer altını ceplerine indirmişler.",
+          "Kaplan Adam, koyun postu ile kamçıyı aldıktan sonra, çocuklardan biri:",
+          "Amca, demiş, o koyun postu ile kamçı sihirlidir. Posta binersen, seni havaya uçurur, kamçı ile de vurursan, istediğin yere götürür. Haydi, güle güle!\nÇocuklar altınların sevinci ile uzaklaşırken, Kaplan Adam, koyun postuna bindiği gibi göklere yükselmiş. Kamçı ile posta vurarak Geçitvermez Çay'a doğru yol almaya başlamış.",
+          "Post yıldırım hızı ile gidiyor, Kaplan Adam boşluğa yuvarlanmamak için iki tarafına sımsıkı sarılıyormuş.",
+          "Biraz sonra, Geçitvermez Çay, aşağılarda bir şerit gibi kalmış, post Çay'ın üzerinden hızla geçerek Sivri Dağ'a doğru yoluna devam etmiş.",
+          "Tepesi bulutlar karışan Sivri Dağ, uzakta bir hayal gibi görünüyor, post ona doğru durmadan yaklaşıyormuş. Kâh güneş altında, açık havada giden, kâh bulutların arsından geçen post, Sivri Dağ'a iyiden iyiye yaklaşınca Kaplan Adam, yeniden bir kamçı vurarak Post Dağ'ın tepesinden daha yüksekler çıkarmış.",
+          "Kaplan Adam, dikkatle Sivri Dağ'a bakıyormuş. Üstünden geçerken gördüğü keskin kayalıklar, büyük uçurumlar, içine adeta bir korku düşürmüş. Kendi kendine dev anasına hak vermiş. O korkunç manzaraları görmemek için birkaç saniye gözlerini kapamış.",
+          "Gözlerini yeniden açtığı zaman, Sivri Dağ'ın arkada kaldığını, önüne yemyeşil, kocaman bir ovanın ortasında yüksek kaleler arasında, pek büyük köşk görmüş. Hemen alçalmaya başlamış.",
+          "Alçalmış, alçalmış, alçalmış. Köşkün bahçesinde bir ağacın yanına inmiş. Kamçı ile postu ağacın dalları arsına saklayarak, köşke doğru yürümüş. Hem yürüyor hem de köşkü, etrafı inceliyormuş.",
+          "Kalelerin boyunca yükselen ağaçlar, türlü türlü sesler çıkaran kuşlar, köşkün kapalı pencereleri, insan boyundaki yabani otlar, parmak büyüklüğündeki karıncalar, demir parmaklıklı kocaman kale kapısı, kale oyuklarına yuva yapmış akbabalar, oralarının insan eli değmemiş, korkunç bir yer olduğunu ilk bakışta anlatıyormuş.",
+          "Köşkün kocaman kapısı aralıkmış. Görünürlerde kimseciklerde yokmuş.",
+          "Ayaklarının ucuna basarak içeriye girmiş. Köşkün içinde adeta kulakları sağır eden bir sessizlik varmış. Sadece bahçede öten kuşların sesi uzaktan uzağa geliyor, bu sessizliği bozuyormuş. Geniş, mermer merdivenler, kalın ve yüksek sütunlar, her tarafı kaplayan loşluk, ilk bakışta dikkate çarpıyormuş.",
+          "Yavaş yavaş, merdivenleri çıkmaya başlamış. Hem çıkıyor hem de etrafı dikkatle dinliyormuş. Her katta birkaç tane büyük ve kapalı oda kapısı varmış. Bu kapıları açmak için tokmaklarını çeviriyor, fakat açamıyormuş.",
+          "Böylece en üst kata kadar çıkmış. O zaman kulağına yanık yanık söylenen bir türkü gelmiş. Türküyü söyleyen sesin bir genç kız sesi olduğunu fark edince, bunun Bilge olduğunu anlamakta zorluk çekmemiş.",
+          "İçinde birdenbire bir sevinç parlamış. Düşman elindeki bir tutsağın yerini bulmuş ve onu kurtarmış gibi heyecanlanmış.",
+          "Gene ayaklarının ucuna basarak sesin geldiği odaya doğru yaklaşmış. Odanın kapısı kapalı imiş. Kapının önünde birkaç saniye durup, açayım mı, açmayayım mı diye düşünmüş. Sonra tokmağı çevirip içeriye girmiş. Kapının gıcırtısından birdenbire korkan Bilge, dönüp o tarafa bakmış. Arap'ı beklerken, karşısında, dev iriliğinde, yakışıklı bir adam görünce, önce şaşırmış. Sonra:",
+          "Kimsiniz, diye bağırmış, buraya nasıl geldiniz?\nKaplan Adam, ona ağır ağır yürürken:",
+          "Korkmayınız, demiş, ben size fenalık yapmak için değil, iyilik yapmak için gelen bir insanoğluyum. Evvela söyleyin bana, Arap nerede?\nBu sözler, Bilge'nin yüreğine biraz su serpmiş. Ona:",
+          "Arap şimdi burada değil, demiş. O sabahları çıkıp gider. Ben akşama kadar temizlik yapar, yemek pişirir, bütün işleri görürüm o, hava karardıktan sonra gelir. Çok geçimsiz, vahşi ve fena ahlaklı bir adamdır. Beni evlatlık yapmak için buraya kaçırdığı halde, burada bir hizmetçiden farkım yok. Üstelik her gün dayak da yerim.\nÜzüntüsü ve kederi, yüzünün sarılığından, zayıflığından ve üstünün perişanlığından belli olan Bilge'ye, Kaplan Adam pek acımış. Onu okşayarak:",
+          "Sen üzülme sultanım, demiş, artık üzüntün ve kederin sona erecek. Seni babanın, annenin ve padişah dedenin yanına götüreceğim. Ben memleketinizin başkomutanıyım. Babanın da yakın arkadaşıyım. Seni buradan her ne pahasına olursa olsun kurtaracağım. Şimdi beni dinle: Burada gizlenecek bir yerin varsa, beni oraya sakla! Akşam Arap dönüp de buraya gelince, ben hemen onu iple bağlayacağım, sonra hep beraber saraya gideceğiz. Şayet bana karşı gelecek olursa, bir kılıç vuruşuyla onun başını uçuruveririm. Kafasını da yanımıza alarak memlekete gideriz, olur mu?\nBilge, kendisini korkunç Arap'ın elinden kurtarmaya gelen Kaplan Adam'ın ellerine sarılıp öpüyor, sevinç gözyaşları döküyormuş. Ona:",
+          "Arap, sizin ve benim gibi bir insan değildir ki, demiş, size karşı gelmesin… O, yedi canlıdır. Kılıç onun hiçbir yerini kesmez. Yalnız, o her zaman böyle değildir. Bazen sizden ve benden farkı olmaz. O vakit kendisinden kuvvetli bir insan ona her şeyi yapabilir. Bazen de yedi canlı oluverir. O zaman da ona kimse dokunamaz.\nKaplan Adam, bundan bir şey anlamamış:",
+          "İyi ama demiş, bu nasıl şey sarayın kırkıncı odasında ben onu bağlı olarak bulmuştum. Kendisini iplerden kurtarıp serbest bırakmam için yapmadığını bırakmadı. Yalan söyleyerek beni kandırdı, kaçtı. Yedi canlı olsaydı, yakalanıp hapse atılabilir miydi?\nBilge gülerek:",
+          "Durun, onun sırrını size anlatayım, demiş. Ben de geçenlerde iyi bir zamanda bunu kendisinden öğrendim…\nBilge misafirine yer gösterip kendisi de karşısına oturduktan sonra, anlatmaya başlamış:",
+          "Şu taraflarda bir Domuz Dağ'ı varmış. O dağda gayet iri, kuvvetli bir domuz yaşıyormuş. Bu domuzun karnında iki tane kutu varmış. Bu kutulardan birinin içinde beyaz, ötekinin içinde siyah bir güvercin bulunuyormuş. İşte bu güvercinlerin beyazı Arap'ın kuvveti imiş. Siyah güvercin de, canı… Anladın mı şimdi? O domuzu öldürüp de karnından bu kutuları çıkarıp güvercinlerin kafasını koparmadıkça, Arap'ı hiç kimse kaldıramazmış. Domuz uykuya yattığı zamanlar, Arap'ın da kuvveti kalmıyor, bizim gibi bir insan oluyor. O zaman kendisine her şey yapılabilir. Ama domuz uyanıkken Arap yedi canlıdır. Onu hiç kimse alt edemez. Vücuduna ne ok, ne de kılıç işlemez. Domuzun ne vakit uykuda ne vakit uyanık olduğunu bilmek de imkânsız. Dedem Arap'ı yakalattığı zaman, herhalde domuz uykudaydı. Domuz sonra uyanmıştır ama Arap sihirli odadan kurtulup kaçamamıştır…\nKaplan Adam, Bilge'nin sözlerini dikkatle dinlemiş. Öğrendiklerinden memnun olarak:",
+          "İyi ya, demiş, onunla karşılaştığımız zaman, şayet domuz uykuda ise, işini bitiririm…\nBilge heyecanla onun sözünü kesmiş:",
+          "Peki ya domuz uykuda değilse, ne olacak?\nKaplan Adam, gülerek:",
+          "Heyecanlanma sultanım, demiş, domuz uyanıksa buradan çıkarak gidip onu bulur, öldürürüm. Sonra da karnını yararak kutuları çıkarır, güvercinlerin kafalarını koparırım…\nBilge, ümitsiz bir halde:",
+          "İyi ama demiş, siz buradan kaçamazsınız ki… Etraf yüksek kalelerle çevrili…\nOnlar böyle konuşmaya daldıklarından, vaktin geçip akşam olduğunu, havanın kararmaya başladığını fark etmemişler. Neden sonra Bilge'nin aklı başına gelmiş:",
+          "Arap nerede ise gelir, demiş, siz şu perdenin arkasına saklanın. Ama dikkat edin, sonra ikimizin de sonu fena olur…\nKaplan Adam, Bilge'nin gösterdiği perdenin arkasına saklandığı zaman dışardan gök gürültüsünü andıran bir ses duyulmuş.",
+          "Bilge:",
+          "İşte, demiş, Arap geliyor. Bu gürültü, kale kapısının kapanışıdır. Aman kendinize dikkat edin!\nBirkaç dakika sonra, Arap odadan içeriye girmiş. Şöyle bir etrafı gözden gezdirerek:",
+          "Burada insan kokusu var, demiş, yoksa bir yabancı mı geldi?\nBilge bir yalan uydurmaya çalışırken, Kaplan Adam, pencerenin arkasından çıkarak, yüksek sesle:",
+          "Evet, iyi bildin, demiş. Burada biri var ama yabancı değil! Tanıdın mı beni? Arap, karşısında Kaplan Adam'ı görünce, bir kahkaha atarak:",
+          "Vah dostum vah, diye kükremiş. Yalanıma inandın, bana acıyarak kırkıncı odadan beni kurtardın ama, ben acımak nedir bilmem. Buradan sağ çıkamayacaksın. Koru kendini…",
+          "Arap çevik bir hareketle, duvarda asılı duran bir kılıcı kaptığı gibi Kaplan Adam'ın üzerine yürümeye başlamış. Kaplan Adam da kılıcını çekerek Arap'ın üzerine atılmış.",
+          "İkisi arasında öyle bir kılıç çarpışması başlamış ki, korku içinde kalan Bilge, büzülerek saklandığı köşeden bu çarpışmayı yüreği ağzına gelerek seyrediyormuş.",
+          "Vücuduna kılıç işlemediği için, Arap çok serbest çalışıyor, Arap'dan daha iri ve daha kuvvetli olduğu için, Kaplan Adam da, kılıcı ona kolayca dokundurabiliyormuş. Ama Kaplan Adam, Arap'ın kılıcı kendisine dokunmasın diye de, daima korunuyor, eşyaları bazen kendisine siper ediyormuş.",
+          "Kılıçların birbirlerine sert sert çarpışmasından çıkan sesler, Bilge'nin yüreğini ağzına getiriyor, Kaplan Adam'a bir şey olacak diye aklı başından gidiyormuş.",
+          "Bu çarpışma arasında, Kaplan Adam, kılıcı Arap'ın, omzuna, kollarına, karnına, kafasına hatta göğsüne birkaç defa dokundurduğu, hızla vurduğu halde, araba hiçbir şey olmamış. O, adeta oyun oynuyormuş gibi kahkaha atıyor:",
+          "Seni elimden padişahın askerleri bile kurtaramayacak, seni burada parça parça edeceğim! Diyormuş.\nKaplan Adam, anlamış ki, Arap'ı öldürmek kolay olmayacak… Bilge'nin dedikleri çıkıyor. Her halde domuz uyanık… Artık buradan gidip domuzu bulmak gerek…",
+          "Hemen aklına geleni yapmaya karar vermiş. Yavaş yavaş kapı tarafına doğru dönmüş. Çarpışa çarpışa kapıdan çıkmış. Arap peşini bırakmadığı için, çarpışma koridorda ve merdivenlerde devam ediyormuş.",
+          "Kaplan Adam'ın kaçmak istediğini anlayan Arap:",
+          "Korktun değil mi koca herif, diye bağırmış, nerde kaldı senin kuvvetin?! Göster kendini bakalım…\nKaplan Adam korkar mı hiç? Hemen karşılık vermiş:",
+          "Korkmak mı?! Ben öyle bir şey bilmediğimi sana ispat edeceğim… Senin canını cehenneme göndermeye ant içtim. Göreceksin, bunu yapacağım…\nGene alaylı alaylı kahkaha atan Arap:",
+          "Köşkümün etrafında yüksek kaleler olduğunu unutuyorsun galiba, demiş, buradan hiç kimse çıkamaz…\nArap böyle yüksekten ata ata konuşurken, Kaplan Adam, Arap'ın kılıç tutan eline öyle bir indirmiş ki, Arap'ın kolu kopmamış ama, kılıcı elinden düşmüş, merdivenlerden aşağı yuvarlanmış.",
+          "Bu fırsatı kaçırmayan Kaplan Adam, arkasına bakmadan, merdivenleri dörder, beşer atlayarak kapının bulunduğu yere inmiş. Bir sıçrayışta kendisini bahçeye atmış.",
+          "Onun kaçtığını sana Arap, nasıl olsa bir yere gidemeyeceğini, bahçenin bir köşesinde onu yakalayacağını düşünerek hiç acele etmiyormuş. Gidip kılıcı aldıktan sonra, Kaplan Adam'ın arkasından bahçeye çıkmış.",
+          "Kaplan Adam, var kuvvetiyle koşuyor, Arap da biraz uzaktan onu kovalıyormuş.",
+          "Çok geçmeden, Kaplan Adam, kamçı ile postu sakladığı ağacın altına gelmiş. Arap'ın tam yanına yaklaşacağı sırada posta binerek havalanmış.",
+          "Hiç hatırına gelmeyen bir şeyle karşılaşınca, Arap, fena halde kızmış. Kaplan Adam'ın arkasından seslenmiş:",
+          "Kaçmakla elimden kurtulduğunu sanma! Bilge burada oldukça, seni ne zaman olsa ele geçiririm…\nBu sefer kahkaha sırası Kaplan Adam'a gelmiş. Yavaş yavaş uzaklaşırken:",
+          "Kaçmak mı, diye bağırmış, benden öyle şey bekleme! Bana yalan söylediğin için senin cezanı kendi elimle vereceğim… Şimdi nereye gittiğimi biliyor musun? Domuz Dağ'ına gidiyorum… Senin domuzu öldürüp, kuvvetini de, canını da yok edeceğim…\nKaplan Adam'ın sözleri karşısında, Arap, şaşkına dönmüş. İçine bir korkudur düşmüş. Kendi kendine, bu adam domuzu öldürür de karnındaki kutuları çıkararak güvercinlerin kafalarını koparırsa, öldüğüm gündür, demiş.",
+          "Önce “Kaplan Adam, Domuz Dağ'ındaki benim domuzu nereden öğrendi acaba”, diye düşünmüş. Bu sırrı yalnız Bilge'nin bildiğini hatırlayarak, Kaplan Adam'ın ondan öğrendiğini bulmakta zorluk çekmemiş. Hemen gidip Bilge'yi öldürmeye karar vermiş. Köşke doğru hızla adımlarla giderken, Kafsını gökyüzüne kaldırarak gökyüzüne bakmış. Bir de ne görsün? Kaplan Adam, havada bir nokta gibi görünüyor. Domuza gittikçe yaklaşıyormuş.",
+          "Arap kaybedecek zamanı olmadığını düşünerek, kale kapısına doğru hızla koşmuş. Kapının yanındaki merdivenden kalenin tepesine çıkmış. Oradaki kartallardan birinin sırtına atlayarak Kaplan Adam'ın peşine düşmüş.",
+          "Kartal ne kadar hızlı uçsa da, Kaplan Adam'ın yıldırım gibi giden sihirli postunun onda biri kadar bile yol alamıyormuş.",
+          "Çok geçmeden, Kaplan Adam, Domuz Dağ'ının üzerine varmış. Alçaktan uçarak domuzu aramaya başlamış. Nihayet bir su başında koca domuzu görmüş.",
+          "Kamçıyı vurduğu gibi, postu hızla domuzun yanına indirmiş. Kılıcı, postu, kamçıyı bir kenara koyup domuzun üzerine atılmış.",
+          "Aralarında çok çetin bir boğuşma başlamış. Kaplan Adam, bazen domuzu altına alıyor, fakat onu bir türlü öldüremiyormuş. Domuzun boynu o kadar kalın, gövdesi o kadar yağlı, derisi o kadar sertmiş ki, Kaplan Adam, bu yırtıcı hayvana hiçbir şey yapamıyormuş.",
+          "Buna karşılık, onun eli, yüzü, kolları, bacakları kan içinde kalmış…",
+          "Böylece birbirlerini öldüresiye boğuşurlarken, Kaplan Adam'ın ayağı kocaman bir taşa takılmış, sırtüstü yıkılmış. Bu fırsatı kaçırmayan domuz, hemen Kaplan Adamın üzerine çullanmış.",
+          "Durumunu fena olduğunu anlayan Kaplan Adam, sol yumruğunu sıkarak kolunu domuzun açık olan ağzından boğazına kadar sokmuş. Maksadı, domuzu boğarak öldürmekmiş",
+          ".",
+          "Domuz, boğulmamak için biraz gerilemiş. Kaplan Adam, derhal ayağa kalkarak kolunu kurtarmaya çalışırken, domuz kuvvetli bir ısırışla, Kaplan Adam'ın elini bileğinden koparmış.",
+          "Kaplan Adam, sol bileğinden kanlar aka aka koşup kılıcını almış. Arkasından hızla koşan domuz kafasına var kuvvetiyle sokmuş",
+          "Birdenbire neye uğradığını anlamayan domuz, önce biraz sendelemiş. Bu sırada, Kaplan Adam kılıcını hızla çekmiş, çıkarmış. Domuzun kafasından bir fıskiye gibi kan fışkırırken, o, kılıcı bu sefer daha kuvvetle domuzun boynuna vurmuş. Domuzun Kafsı kopmamış ama bu vuruş, onu yere sermeye yetmiş. Koca domuz, kafasından, boynundan kanlar aka aka, homurdan homurdana yerde yuvarlanır, tepinirken, Kaplan Adam, kılıcı bir kere de hayvanın karnına saplamış.",
+          "Onlar böyle savaşıp durularken, kartalın sırtındaki Arap da, Domuz Dağı'na iyiden iyiye yaklaşmış.",
+          "Kaplan Adam, kılıcını bir daha sokarak domuzun karnını adamakıllı yarmış. Domuzun bağırsaklarıyla beraber, iki kutu da ortaya çıkıvermez mi?!",
+          "Kaplan Adam, kutuları eline alıp dikkatle barkken, Arap'ı getiren kartal da, beş on adım kadar ileriye konuvermiş. Kanat sesine başını kaldıran Kaplan Adam, kartalın sırtından Arap'ın telaşla indiğini görünce, tehlikeyi sezmiş. Arap, üzerine doğru gelmeye hazırlanırken, hemen kutunun birini açmış. İçinde kara güvercini görünce. Onun kafasını koparmayı sonraya bırakarak, kutuyu tekrar kapamış. Öteki kutudaki beyaz güvercini çıkarıp kafasını koparmış.",
+          "O anda, Arap'ın “ah!” diye bağırdığı duyulmuş. Ahından dağlar, taşlar inlemiş.",
+          "Kaplan Adam, gülerek ona doğru bakarken, Arap da yalvarıyormuş:",
+          "Ne olur Kaplan Adam, ben ettim sen etme! Canımı olsun bağışla! Bundan sonra senin uşağın, kölen olayım… Ben artık kuvvetim de gitti. Şimdi canım da senin elinde. Artık hiç kimseye fenalığım dokunamaz. Ne olur, kıyma bana!\nKaplan Adam, kara güvercinin bulunduğu kutuyu elinde tutarak:",
+          "Sözlerine bir kere inandım, başıma birçok şeyler geldi, demiş. Bak işte, bu yüzden sol elimi bile kaybettim. Artık sana nasıl inanabilirim… Bundan sonra başkalarına fenalık yapmaya göz yummam!\nKaplan Adam, sözlerini bitirince, sağ eliyle sırtındaki gömleği yırtarak, hala kanamakta olan sol bileğini sarmış.",
+          "Bütün kuvveti gitmiş, Arap, korku içinde titriyor, acaba Kaplan Adam kara güvercinin de başını kopararak beni öldürecek mi diye bakıyormuş.",
+          "Kaplan Adam, daha fazla zaman kaybetmenin doğru olmadığını düşünerek, kara güvercinin bulunduğu kutu ile kılıcını sağ eline almış, Arap da beraber posta binmişler, hızla havalanmışlar.",
+          "Kaplan Adam, sihirli kamçısıyla vurarak, postu Arap'ın köşküne doğru yollandırmış. Çok görmeden, post, köşkün bulunduğu yere gelmiş, vız diye bahçeye inmiş. Bilge de zaten heyecan içinde bekliyormuş. Postun üzerinde Kaplan Adamla beraber Arap'ın da geldiğini görünce, domuzun öldürüldüğünü anlamakta zorluk çekmemiş. Uzun süren bu tutsak hayatından artık kurtulacağını düşünerek son derece sevinmiş. Daha sonara koşa koşa merdivenlerden aşağıya inerek onların yanına gitmiş. Hemen koşup Kaplan Adam'ın ellerine sarılmış.",
+          "Arap, Bilge'ye çok fena bakıyor, fakat artık hiçbir kuvveti kalmadığı için, ona dokunamıyormuş. Kaplan Adam, Bilge'yi de yanına alarak postu bıraktığı yere doğru yürümüş. Arap gitmek istemiyor, olduğu yerde duruyormuş. Kaplan Adam dönüp onun yanına giderek kolundan tutmuş, sürükleye sürükleye postun yanına getirmiş. Arap, durmadan çırpınıyordu, Kaplan Adam'ın elinden kurtulmaya çalışıyormuş. O böyle uğraşıp dururken, Bilge ile Kaplan Adam posta güzelce oturmuşlar. Post hemen havalanmış. Kaplan Adam Arap'ın kolunu bırakmadığı için, kendileri rahat rahat oturdukları halde, Arap boşlukta sallanıyormuş. Bu durumun tehlikeli olduğunu, Kaplan Adam'ın elinden kurtulamayacağını anlayan Arap, çaresiz posta çıkıp oturmuş. Her üçü de, düşmemek için posta sıkı sıkı tutunuyorlarmış. Bilge'nin sevinçten ağzı kulaklarına varıyor, Arap ise bu sefer kurtuluş olmadığını düşünerek kederli kederli oturuyormuş. Sihirli post yıldırım hızıyla yol alıyor, koca, koca dağları, yemyeşil ormanları, şerit şerit nehirleri, uçsuz bucaksız ovaları geçiveriyormuş.",
+          "Akşama doğru devlerin mağarasına varmışlar. Yere indikten sonra, Kaplan Adam önde, Bilge onun yanında, Arap da arkada olduğu halde, mağaradan içeriye girmişler. Onların geldiklerini hisseden devler, hep birden kalkıp bunları karşılamışlar. Şehzade, sevgili kızına koşarken, Bilge de ona doğru sevinçle atılmış. Önce baba ile kızın kucaklaşmasını zevkle, gururla seyreden Kaplan Adam, sonra dev anasına dönerek:",
+          "İhtiyar, işte senin ele geçmez dediğin Arap avucumun içinde, demiş. Bak ne de kuzu gibi, görüyor musun?\nDev anası da çocukları da, Kaplan Adam'ın bu başarısı karşısında ondan adeta ürkmüşler, birbirlerine şaşkın şaşkın bakmaya başlamışlar.",
+          "Daha sonra, hep birlikte yemeğe oturulmuş. Dev anası misafirlerine en güzel yemeklerini yedirmiş. Kaplan Adam'ın dileği üzerine Arap'a da ekmek vermişler.",
+          "Yemek bitmiş. Dev anası, misafirlerini öteki mağaralarda hazırlattığı yerlere götürüp yatırmış. Arap'ı da kaçmasın diye kendi yanına alıkoymuş; boş bir yemek kazanını içine oturtarak kazanı da tavana asmış.",
+          "Kaplan Adam, ertesi sabah, tanyeri ağarırken uyanmış. Şehzade ile Bilge'yi de uyandırmış. Hemen hazırlanmışlar. Arap'ı da yanlarına alıp devlere de veda ederek hep birden posta binmiş, havalanmışlar.",
+          "Az gitmişler, uz gitmişler. Dere tepe dağ aşmışlar… Güneş tepeye varmadan, padişahın ülkesine ulaşmışlar. Doğruca sarayın bahçesine konmuşlar.",
+          "Havadan doğru hızla bir şey indiğini, daha sonra da bunun dört kişi olduğunu gören saray askerleri, postun indiği tarafa koşmuşlar. Oraya vardıkları zaman, şehzade, Bilge ve Başkomutanları Kaplan Adam'la karşılaşınca ne yapacaklarını şaşırmışlar. Hemen koşup padişaha haber vermişler. Padişah da, sultanı yanına alıp onları görmeye giderken merdivende karşılaşmışlar. Padişahla ihtiyar karısının, sevgili torunları Bilge ile şehzadeyi kucaklaması görülecek şeymiş. Birbirlerine yeniden kavuştukları için sevinç gözyaşları döküyorlarmış.",
+          "Kaplan Adam, biraz geride duruyor, güler yüzle onları seyrediyormuş. Neden sonra, padişah oğlundan ve torunundan ayrılarak Kaplan Adam'a doğru yürümüş. Kaplan Adam, hemen ilerleyerek padişahın elini öpmüş. Padişah da onu kucaklayarak alnından öpmüş. Fakat Kaplan Adam'ın sol bileğini sarılı görünce, merak ederek hemen sormuş.",
+          "Konuşa konuşa salona çıkarlarken, Kaplan Adam, bütün başından geçenleri, elini nasıl kaybettiğini, padişaha bir bir anlatmış.",
+          "Padişah, Kaplan Adam'ın cesaretine ve fedakârlığına son derece hayran kalmış. Ona:",
+          "Sana nasıl teşekkür edeceğimi bilemiyorum oğlum, demiş. Beni nihayet torunuma kavuşturdun!\nKaplan Adam, karşılık vermiş:",
+          "Ben sadece görevimi yaptım padişahım. Arap da şimdi aşağıda. Bu kutuda da canı saklı kutu sizde durdukça, Arap kuzu gibi bir adam olarak kalacaktır. İsterseniz kutunun içindeki kara güvercinin başını koparalım, Arap hemen ölsün!\nPadişah:",
+          "Hayır, demiş, sen onun bütün kuvvetini elinden almakla zaten cezasını vermişsin. Öldürüp de ne yapacağız. O, yaşadıkça, hiçbir fenalığın cezasız kalmadığını anlayacak, o haliyle başkalarına da örnek olacaktır. Sana gelince, bu hareketini mükâfatlandıracağım. Artık iyice ihtiyarladım. Ben çekiliyorum, yerime sen padişah olacaksın.\nKaplan Adam, kızararak:",
+          "Nasıl olur padişahım, demiş, ben bir iş yaptımsa bunu mükâfat görmek için yapmadım. Size vermiş olduğum sözü, merakımı yenemeyerek tutmamış, bu suretle yalancı bir duruma düşmüştüm. Bu hatamı düzeltmek için koştum, yoruldum, uğraştımsa, bu benim verdiğim sözde durmamamın cezası olmuştur. Hem, padişahlık, oğlunuzun hakkıdır. Eğer kendimi affettirebildimse, gene başkomutan olarak kalmak benim için en büyük mükâfattır.\nKaplan Adam'ın bu sözleri, padişahın son derece hoşuna gitmiş. Ve o günden sonra, Kaplan Adam'ı yanından hiç ayırmamış.",
+          "Onlar emiş muradına, biz çıkalım tavan arasına.",
+        ],
+      },
+      {
+        id: "09-uc-turunclar",
+        baslik: "Üç Turunçlar",
+        etiketler: ["turunç perisi", "şehzade", "aşk", "kara büyü"],
+        kaynak: "Kurşunkalem (kursunkalem.com), \"Üç Turunçlar Masalı\", derleyen Nebahat Çetin, yayın 14 Eylül 2016, http://www.kursunkalem.com/uc-turunclar-masali/ (erişim 29 Ekim 2026). Aynı adlı bir metin KTB e-Kitap \"Masallar\" dizisinde de var (https://ekitap.ktb.gov.tr/Eklenti/10795,ucturunclarpdf.pdf?0), ancak ikisinin aynı metin olduğu doğrulanamadı.",
+        metin: [
+          "Varmış, yokmuş Allah'ın kulu çokmuş. Çok söylemesi günah, söyleneni dinlememek çok ayıpmış.",
+          "Vaktin birinde, bir memleketin bir padişahı varmış. Padişahın da bir tanecik oğlu varmış. Günlerden bir gün bu şehzade balkona çıkmış. Balkondan şehrin orta yerindeki pınar görünürmüş. Şehzade balkondan pınara gelip su dolduran kadınları gözlemiş. Bir tane yaşlı kadın da su doldurmaya gelmiş. Şehzade bir taş alıp atmış. Yaşlı kadının testisini kırmış. Yaşlı kadın şehzadeye dönmüş:",
+          "\"Sana bir şey demem oğul. Sen olasın üç turunçların aşkına düşesin. Sararıp solasın,\" demiş ve gitmiş, Şehzadeyi o günden sonra bir ateştir almış. Üç turunçlar demiş de başka bir şey dememiş. Padişah oğlunun haline üzülmüş. Sultan Hanım oğluna:",
+          "\"Oğlum, bir tanecik oğlum, niye bu hallere düştün. Sana memleketimizin en güzel kızını alalım, \"demiş. Şehzade:\n\"Anam\" demiş, \"anam ben istemem, dünya güzelini getirseniz bile üç turunçları arayıp bulacağım. Ya bulup getireceğim, ya bu yolda öleceğim,\" demiş. Heybesini doldurmuş. Atını eyerlemiş. Demir çarık, demir âsa düşmüş yollara.",
+          "Az gitmiş, uz gitmiş. Dağlar aşmış. Düzler geçmiş. Gide gide bir ormana varmış, bakmış ormanda bir in. İnde iki tane aslan yavrusu.. Büyük bir yılan da yavruları yemek için hücum ediyormuş. Yılanı öldürmüş. Yavruları kurtarmış. Bakmış ana aslan topallıya topallıya geliyor. Ana aslan gelince yavrularını bu adam öldürdü sanmış. Parçalayacakken, yavruları yılanı göstermişler. Ana aslan her şeyi anlamış. Şehzadeyi çağırmış. Şehzade aslanın yanına yaklaşınca bakmış sağ ön ayağı şişmiş. İltihap dolmuş. Şehzade:",
+          "\"Aslan ana\" demiş. \"O ayağına ne oldu ki, ver bakayım ne varsa çıkarayım. Belki iyileştiririm.\" Ana aslan ön sağ ayağını uzatmış. Şehzade ayağa bakmış ki koca bir diken var. Dikeni çekip çıkarmış. Yaraya eliyle basmış. İçindeki iltihapla pis kanı temizlemiş. Yarayı silmiş, güzelce. Aslan rahatlamış ayağındaki yara temizlenince. Şehzadeye dönmüş:",
+          "\"İnsanoğlu\" demiş, \"bana bugün iki büyük iyilik ettin. Birinci yavrularımı kurtarıp bana bağışladın. Sonra beni acıdan kıvrandıran ayağımdaki yarayı temizleyip iyileştirdin. Sana nasıl yardım edeyim?\" diye sormuş. Şehzade:",
+          "\"Aslan ana, benim yaptığımda ne var ki, herkes o şekilde hareket ederdi. Bana yardım etmene gelince, hiç sanmıyorum. Çünkü ben yıllardır üç turunçları arıyorum. Aradığım halde ne yerini buldum, ne yerini bilene rasladım,\" demiş. Aslan an ana sevinçle:",
+          "\"İnsanoğlu sana umduğundan çok yardım edeceğim. Çünkü yerini biliyorum üç turunçların,\" demiş. Şehzade heyecanla:",
+          "\"Söyle ana söyle ana,\" demiş. Aslan ananın boynuna sarılmış. Aslan ana:",
+          "\"Şimdi bu dağı aşacaksın bunun arkasında bundan daha yüce bir dağ var onu da aşacaksın. Onun arkasındaki daha da yüce. İşte o dağın tepesine çık. Tepede büyük bir devin büyük bir kalesi var. Kalenin bir kapısı açık, biri kapalı, Bir kapıda bir köpek bağlı, birinde koyun. Koyunun önünde et var, köpeğin önünde de ot. Kale kapısına gelince koyunun önündeki eti köpeğe ver, köpeğin önündeki otu da koyuna. Kalenin açık kapısını kapat, kapalı kapısını aç ve içeri gir. Yolun her tarafı böğürtlenlerle dolu. Böğürtlenlerin dikenleri yoluna devam ettirmeyecekler seni. Sen böğürtlenleri elinle okşa ve \"Oh! Ne güzel güllermiş\" de, böğürtlenler sana yol verecekler, bir ağacın altında bir dev göreceksin. Devin gözleri yumuksa, bil ki uyanık, sesini çıkarma, gözleri açıksa da dev uyumuştur. Ağacın başında üç tane turunç var. Yerden bir taş al, Bismillah, de taşı at. Üç seferde düşüremezsen taş kesileceksin. Oradan çıkarken de sakın arkana bakma. Turunçları da su kenarında kes,\" demiş. Şehzade helâlaşıp yola koyulmuş.",
+          "O dağı aşmış. Ardından ondan daha yüce bir dağı aşmış. Derken üç turunçların bulunduğu hepsinden yüce dağa gelmiş. Dağın tepesine varmış. Bakmış büyük bir kale var. Kalenin iki kapısından biri açık biri kapalı. Kapılardan birinin önünde bir koyun, koyunun önünde de bir parça et duruyormuş. Bir kapının önünde de bir köpek yatıyormuş, köpeğin önünde bir kucak ot varmış. Koyunun önünden eti almış, ite vermiş, itin önündeki otu da koyuna vermiş, Kalenin açık kapısını kapatmış, kapalı kapısını açıp içeriye girmiş. Bakmış her taraf böğürtlen. Bir girmiş böğürtlenlerin içine. Dikenler her yanını kanatmış. Aslanın dediklerini hatırlamış ve böğürtlenleri okşamış.",
+          "\"Aman ne güzel güller\" demiş. Böğürtlenler Allah'tan açılmışlar yolun iki yanına doğru. Şehzade ilerlemiş. Bakmış bir turunç ağacı, Ağaçta üç tane turunç varmış. Ağacın altında da bir dev uzanmışmış. Devin gözleri açıkmış. Şehzade devin uyuduğunu anlamış. Yerden bir taş almış;",
+          "\"Bismillah\" deyi atmış turunçlara... Değdirememiş. Bakmış dizlerine kadar taş kesildi. Bir taş daha alıp atmış, yine değdirememiş. Beline kadar taş kesilmiş. Üçüncü taşı da değdiremeyince bakmış tamamen taş kesilecek. Yaradana sığınıp bir taş daha atmış. Turunçlar düşmüş. Turunçları alıp ardına bakmadan koşmaya başlamış. Dev uyanmış ve:",
+          "\"Böğürtlenler tutun onu,\" demiş.\nBöğürtlenler yolu iyice açıp: \"Ya! O bizi okşadı, sevdi,\"demişler. Dev kalenin kapısına:",
+          "\"Demir kapı tut onu,\" demiş.\nKapı: \"Yooo!\" demiş. \"Ben yıllarca kapalıydım. O beni açtı\" İyicene açılmış. Dev, son ümit köpekle, koyuna seslenmiş: \"Köpeğim, koyunum\" demiş tutun onu,",
+          "Köpek:\nYoo\" demiş. O bana et verdi.\nKoyun da:\n\"Onu tutmam\" demiş. O bana ot verdi. Neyse şehzade kaçıp kurtulmuş. Yoldan giderken susamış. Sağa bakmış su yok. Sola bakmış su yok. Aklına turunçlar gelmiş. Aslan ana turunçları su başında kes demişti ya, bunu unutmuş meğer. Turunçlardan en büyüğünü çıkarmış, kesip suyunu emecekmiş. Bıçakla turuncu ikiye böler bölmez, turuncun içinden ayın on dördü gibi bir kız çıkmış:",
+          "\"Su. Su.\" Demiş. Şehzade suyu nereden bulsun. Turunç güzeli ölmüş. Bir müddet daha gitmiş. Yine su bulamamış. Ortanca büyüklükteki turuncu da kesmiş. Bu turunçtan daha da güzel bir kız çıkmış. O da:\n\" Su... Su...\" diye can vermiş.",
+          "Şehzade elimde kalan turuncu kesmiyeceğim\" demiş. Kendi kendine ve kesmemiş. Az sonra da memleketin topraklarına dâhil olmuş. Bir gölün başına varmış. Orada bir pınardan kana kana su içmiş. Sonra gölün kıyısına oturup turuncu kesmiş. Bu son turunçtan çıkan kız daha da güzelmiş. Ay'a diyormuş, sen doğma ben doğayım, güne diyormuş, sen doğma ben doğayım. Neyse turunçtan kız çıkar çıkmaz:",
+          "\"Su. Su.\" demiş Şehzade de kızı gölün içine atıvermiş. Kız su içmiş. Elini yüzünü yıkamış ve kenara çıkmış. Şehzadeye:",
+          "\"Beni kurtardın. Ablalarım nerde ola ki,\" demiş, şehzade üzüntüyle: \"Onlara su kavuşturamadım öldüler,\" demiş.\nKız:",
+          "\"Kader,\" demiş. \"Biz padişah kızlarıydık, o dev bize büyü yapıp bizi turunç etmişti. Şimdi ben ne olacağım?\" diye sormuş. Şehzade:",
+          "\"Sultanım\" demiş. Ben senin için dağlar aştım, düzler geçtim. Yıllardır yollardayım. Benimle evlenir misin?\"",
+          "Kız:\n\"Ne yapalım kader,\" demiş. Şehzadeyi de ilk görüşte sevmişmiş zaten.\nŞehzade parmağındaki elmas yüzüğü çıkarmış, turunç güzeline vermiş.\n\"Bu yüzüğü parmağına tak. Ben gidip anama, babama haber vereyim, gelip seni buradan düğün alayınan alayım,\" demiş. Kız.",
+          "\"Peki, tez gelin,\" demiş.",
+          "Şehzade gidince kız bir ağacın tepesine çıkmış. Kimse görmesin diye. Biraz sonra elinde testisiyle bir çingene kızı pınara su almaya gelmiş. Kara kapkaraymış. Çirkin, pis bir kızmış. Göle eğilmiş çingen kızı. Suda turunç güzelinin aksini görmüş. Kendi kendine:",
+          "\"Ben ne güzelmişim de haberim yokmuş, demiş. Padişaha gelin olacak kadar güzelim\" demiş. Elini saçına götürüp düzeltmek istemiş. Bakmış göldeki aksi elini kaldırmıyor. Şaşmış kalmış. Sağa sola bakmış ağacın üstündeki turunç güzelini görmüş. Çingen kızı:",
+          "\"Bacı, bacı\" demiş. \"Niye öyle ağacın tepesinde oturuyorsun. İn aşağıda iki laf edelim, demiş.",
+          "Turunç güzeli ağaçtan inmiş. Konuşmuşlar biraz. Çingen kızı bir kurnazlık düşünmüş hemen:",
+          "\"Bacı\" demiş. \"Gel seni yıkayayım. Temiz ol ki padişahın adamları seni daha çok beğensinler.\"",
+          "Turunç güzeli de inanmış. Soyunmuş. Çingen kızı yıkarken turunç güzeli:",
+          "\"Aman dikkat et tepemdeki üç gümüş teli koparma, demiş. Çingen bunu duyunca durur mu: Bir fırsatına getirip gümüş teli koparmış. Turunç güzeli bir beyaz güvercin olmuş.",
+          "\"Pırrr... Pırrrr...\" diye uçup ağacın dalına konmuş.",
+          "Çingen kızı turunç güzelinin elbiselerini giymiş. Ağaca çıkıp beklemiş. Padişahın adamları gelmiş. Kızı götürmüşler. Şehzade yalnız kaldıkları vakit:",
+          "\"Sen öyle değildin, ne oldu ki böyle karardın,\" demiş. Çingen kızı: \"Seni beklerken güneşten yandım,\" demiş. Beyaz güvercin olan turunç güzeli de pencerenin dibindeki dallardan birine konup:",
+          "Ben bir turunç güzeliydim\nÇingen kızı yerimi aldı\nRüzgâr esti yel savurdu\nŞehzademi Çingen aldı",
+          "Diye ötmüş. Güvercin ötmeye başlayınca Çingen kızı da kendi dilince türkü söyleyip\nsesini bastırmaya çalışırmış. Şehzade bu güzel kuşa çok alışmış. Her gün balkona çıkıp bunu dinlemiş. Bir gün güvercini yakalatıp altın bir kafese koymuş, Başucuna asmış. Her gün onu dinlemiş.",
+          "Güvercin bu sefer de:\nHas bahçedir benim yerim.\nAltın kafesi neyleyim\nŞehzademin yüreği kan ağlar\nGücüm yetmez yardım edem.",
+          "Diye ötmüş. Çingen kızı bakmış kurtuluş yok Yalandan hasta olmuş. İlle de beyaz güvercin eti isterim diye tutturmuş. Şehzade ne yapmış ne etmiş, ne demişse kâr etmemiş. Çingen kızına çaresiz, beyaz güvercini kestirip etini yedirmişler. Kemiklerini de bahçeye atmışlar. Kemiklerin atıldığı yerde bir kavak ağacı bitmiş. Günden güne büyürmüş. Bir hafta sonra şehzadenin odasının penceresine ulaşmış boyu. Yel estikçe kavak sallanarak",
+          "Ben bir uzun kavağım\nCamdan şehzademe bakarım.\nŞehzademi Çingen aldı\nYeri göğü tutuyor ahım.",
+          "Deyip, hışır hışır sallanmış. Bu arada Çingen kızı da iki canlı) olmuş. Ay aydan, gün günden... Derken dokuz ay on gün sonra bir oğlan doğurmuş. Bebeği doğar doğmaz da: \" İlle bu kavak kesilip, bebeğime beşik yapılacak\" demiş. Çünkü şehzade kavağın nazlı nazlı sallanmasını, yapraklarının sesini çok severmiş. Çingen kızı da bunun Turunç Güzeli olduğunu anlamışmış. Kavağı kesmişler, beşik yapmışlar. Beşik sallandıkça:",
+          "Uyu Çingen oğlu uyu\nAnan kazdı bana kuyu.\nŞehzadem bunu duyarsa\nAnan ölür Çingen oğlu...",
+          "Diye sallanıyormuş. Çingen kızı beşiği de atmış. Şehzadenin ise ağzını bıçak açmıyormuş. Bilirmiş, bu işin içinde bir iş olduğunu, Ama çare bulamamış. Padişahı üzüntü almış. Bir tane oğlu hastalanmış diye. Şehzade bir gün sonra yemek de yemez olmuş. \"Vay talihsiz başım\" deyip dövünüyormuş. Padişahla karısı.",
+          "Onlar dövüne dursun. Hani o şehzadeye:\n\"Üç turunçların aşkına düşersin\" diyen ihtiyar kadın vardı ya. İşte o bir gün gene su testisini almış. Pınardan su dolduruyormuş. Padişahın sarayının kapısı önünden geçerken yerde güzel bir tahta parçası bulmuş. Bu beşiğin, hani şu çingenenin parçalatıp attığı beşiği parçasıydı. Almış eve getirmiş. Bıçakla yontup testinin ağzına kapak yapmış. Nene karının iki tane de ineği varmış. Her gün bu ineğini otlatmaya gidermiş. Evden çıkar çıkmaz testinin kapağındaki tahta fırlayıp turunç olup evi barkı süpürmüş. Yemeği hazırladıktan sonra da tahta olup testinin kapağı olurmuş. Gene nene karı şaşıp kalmış. Bir gün bekliyeyim \"Bu in mi, cin mi\" göreyim, demiş. İneği götürür gibi yapmış kapının anahtar deliğinden gözlemiş, bakmış kapak fırladı ayın on dördü gibi bir kız oldu. Evi sildi, süpürdü, yemeği yaptı. Tam tahta olacağı sırada, nene karı kapıyı açmış. Kızı kolundan tutmuş:",
+          "\"Söyle\" demiş, \"in misin, cin misin?\" Kız: \"Ne inim, ne cinim. Ben de senin gibi bir insan evlâdıyım nenem.\" Nene karı: \" Peki, kimsin, niye tahta oldun,\" demiş.\nKız:\n\" Turunç güzeliyim, büyülüyüm. Büyüm bozuldu, daha da tahta olmam. Ne olur, ne olur ben de seninle kalayım, gidecek kimsen yok,\" demiş. Nene karı: \" Kal kızım demiş. Evde işleri gör. Ben de ineğimizi otlatırım. Geçinip gideriz, demiş.",
+          "Kimseye de söylemem hiç korkma,\" demiş. Sonra da onlar geçinip dursunlar. Bir gün padişah bakmış oğlu yemiye yemiye ölecek. Bir tellâl çıkarıp bağırtmış. Tellâl: \"Herkes bir yemek yapıp, bu yemekten bir tabak veya bir tas getirsin. Belki şehzademiz yer iyileşir,\" demiş. Herkes yemekler yapmış. Saraya sahan sahan üstüne, kâse kâse üstüne yemek taşınmış.",
+          "Şehzade yüzüne bile bakmamış, yemeklerin. Turunç güzeli de nene karıya: \"Nenem\" demiş. \"Gel biz de bir çorba yapıp götürelim. Belki şehzademiz iyileşir,\" demiş. Bir erişte çorbası yapmışlar, bir tasa doldurup nene karıya vermiş. İçine de şehzadenin gölün kıyısında kendisine verdiği elmas yüzüğü atmış yollamış. Nene karıya:",
+          "\"Sakın\" demiş, sakın bunu kimseye verme. Kendi elinle şehzadeye ver. Yiyinceye kadar da bekle, demiş. Nene karı sarayın kapısına gelmiş. Hizmetkârlar içeri sokmak istememişler. Şehzade gürültüyü duyup \"Bırakın gelsin\" demiş. Nene karı yukarı çıkmış. Şehzadeye:",
+          "\"Oğul\" demiş. Bir kaşık da nenenin çorbasından ye. Belki şifa olur, demiş, Yalvarmış. Şehzade nene karıyı kıramamış. Kaşığı daldırıp ağzına götürmüş. Bakmış ağzında sert bir şey var. Çıkarmış ki turunç güzeline verdiği yüzük. Turunç güzelinin sağ olduğuna inanmış. Yüzü gülmüş, nene karıya:",
+          "\"Bu çorbayı kim yaptı eline sağlık Çok hoş pişirmiş\" demiş. Nene karı: \"Kızım pişirdi,\" demiş. Şehzade belli etmeden: \"Kızın kaç yaşında kocan ne iş yapıyor, kızının adı ne\" diye sormuş. Nene karı ne bilecek. Turunç güzelinin hikâyesini anlatmış. Şehzade hemen çingen kızıyla oğlunu bağlatmış. Babasına müjdeciler koşturmuş. Turunç güzelini nene karının evinden alıp gelmişler. Çingen kızına da",
+          "\"Kırk katır mı, kırk satır mı,\" demişler.",
+          "Çingen kızı kırk katır istemiş. Çingen kızıyla oğlunu katırların kuyruğuna bağlamışlar. Onlar parçalana parçalana ölmüşler.",
+          "Şehzadeyle turunç güzelinin kırk gün, kırk gece düğünleri olmuş, onlar ermiş muradına. Al şeftali ver şeftali çekirdeği Güleri'nin gözünden dışarı.",
+        ],
+      },
+      {
+        id: "10-uc-oglan",
+        baslik: "Üç Oğlan",
+        etiketler: ["üç kardeş", "dev", "aile", "kavuşma"],
+        kaynak: "Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), \"Üç Oğlan\", derleyen Numan Kartal, Türk Folklor Araştırmaları Dergisi, 1965, sayı 199. Resmî sayfa: https://www.kulturportali.gov.tr/portal/ucoglan. Metnin alındığı ayna: Okuryazar, \"Üç Oğlan Masalı\", https://www.okuryazar.com.tr/dergi/uc-oglan (erişim 29 Ekim 2026)",
+        metin: [
+          "Bir varmış bir yokmuş, yokmuşluğun varlığında varlığın darlığında bizim hindi asmaya bindi derken asmadan indi. Altı ayla bir güz durmadan gitti. Dağları yol gibi, ovaları sel gibi geçti. Temaşa, temaşa hoş geldin bayram paşa derken bir karı koca ile üç oğluna denk geldi. İmdi oturalım soğuk pınarın suyunu içerekten, çınarın gölgesinde yataraktan keyfimize bakalım. Arkasında da bir masal kuralım.",
+          "Çok eski zamanlarda bir varmış bir yokmuş, develer tellal pireler berber iken, ben anamın anasının anasının beşiğini tıngır mıngır sallarken bir karı koca ile üç çocuğu varmış. Gece gündüz demezler, günleri ayları bilmezler, gün yüzü görmeden evlerinde ömür sürer giderlermiş. Gün gelmiş, böyle ömür sürülmez denmiş de ana baba üçler, beşler, yediler, kırklar demişler, üç oğulları ile kendilerini yola vermişler.",
+          "Az gitmişler uz gitmişler, dere tepe düz gitmişler, altı ayla bir güz gitmişler de neden sonra bir dağın başında şırıl şırıl suyu akan bir pınara gelmişler. Su içelim derken çocuklardan birini çeşmenin yalağına düşürmüşler, birini bir kurda, birini de bir ayıya kaptırmışlar. Netsek neylesek diye telaşa düşmüşler. Sağa bakmışlar sola bakmışlar, çocukları kurtarmak şöyle dursun kendilerinin de tehlikede olduklarını görmüşler. Bey kaçmış, hatun kalmış, onu da bir dev yakalamış. Kaçan bey sonunda kurtulmuş, bir köye muhtar olup koltuğa oturmuş.",
+          "Bazen ümitsizlikler ümidi doğurur, derler. Tanrı büyüktür diye söylerler. Gerçekten de öyle olmuş. Yalağa düşen çocuk kurtulmuş, durmadan \"Tanrım murat\" diye söylenmeye başlamış. Ağzında çocuk olduğu halde kaçan kurdu çobanlar görmüş, peşine düşüp etrafını çevirmiş. Kurtulan bu çocuk da hep \"Tanrım murat\" diye söylermiş, Ya ayı ne oldu demeyiniz, mağarasına gitmiş, çocuğu bir güzelcene besler gözü gibi bilirmiş. O da ikide bir \"Tanrım murat\" diye seslenirmiş.",
+          "Bir gün gelmiş ayı yiyecek bulmaya gitmiş. Çeşme başındaki çocuk \"Tanrım murat\" diye ünlemiş. Mağarayı terk edip sesin geldiği yana gitmiş. Çeşme başına geldiğinde diğer iki kardeşini beraber görmüş. Sevincine diyecek yokmuş.",
+          "Dağlar durak, çeşme başları konak olmuş üç kardeşe. Büyümüşler, serpilip dalyan gibi delikanlılar haline gelmişler. Askerlikleri de gelip çatmış. Birbirlerimize kavuşmakla muradımıza erdik diyerekten şehre inmişler. Zaman dediğin nedir ki yel gibidir gelir geçer, su gibidir akar gider. Askerlikleri de geçmiş. Bir dertleri varmış o da anneleri imiş.",
+          "Çocuklar anne der ağlarmış. Baba da hatun der feryadı basarmış. Ah ettikçe dağlar inler, vah ettikçe gökler gürler, dağlar ateş olup yanarmış. Baba kapıları çalmış, feleğe dert yanmışta derdine yanan olmamış. Var varanın sür sürenin, bu dünya demini sürenin demişte keyfine bakmaya çalışmış. Ama hatunsuz edememiş, bulmak içi evini adayıvermiş. Meğer evi de dillere destanmış. Memlekete haber salmış ki:",
+          "\"Devi kim öldürürse, hatunumu buraya getirirse ona canımdan da aziz bildiğim çok sevdiğim evimi vereceğim.\"",
+          "Sonra devin yerini bir iyice anlatmış, evini donatmış. Ev dediği ev değil, sanki bir sırça köşkmüş. Her yanı çiçeklerle donanmış, havası da pek temiz, suyu cana can katarmış. Yolları mücevher, kapıları zümrütten yapılı bir taht misali dil ile anlatılamıyacak, kalem ile yazılamayacak kadar güzel bir yemiş. Herkes şaşmış, ağzının suyu akmış. Rüyalardaki masal ülkeye kavuşmak için canla başla çalışmaya koyulmuşlar, eve kavuştuk diye sevince dalmışlar. Atalar sözüdür, el elden üstündür, görmeden düşü bilme işi. İş bilenindir, kılıç kuşananın. Üçkardeş de işini bilmiş, atlarına binmiş, kılıçları elde, palalar belde, devi öğendiler ya nerde, koşmuşlar oraya.",
+          "Kolay olmamış varmaları. Bazen yel olmuşlar dağdan dağa atlamışlar, bazen fırtına olmuşlar okyanuslar aşmışlar, bazen da sel olup ovalara akmışlar. Gün gelmiş boyu elli santimlik cüceye yenilmişler, zaman gelmiş dev bir orduyu bir kılıç şakırtısında yenmişler. Ama en sonunda devin bulunduğu mağaraya gelmişler. Kılıç şakırdatmışlar, topuk vurup deve bir selam çakmışlar. Dev şaşırmış, gelenler kimlerdir diye anahtar deliğinden bakmış. Kılıçlar inmiş dev boynunu bükmüş, gözleri şimşek çakarken ol dev oracıkta can vermiş.",
+          "Kapıyı açmışlar, analarının boynuna sarılıp ağlaşmışlar. Sevinçler dalga dalga olmuş, gözyaşları su gibi akıp çağlamış. Binmişler atlarına, var varanın sür sürenin diyerek gelmişler babalarının yanlarına. Önce baba şaşmış, benim oğullarım ha deyip sevinci basmış. O sevine dursun çocuklar ağlaşmış. Suya düşen almış sazı eline, vurmuş mızrabı ile teline de içinin acısını bir iyice dökmüş. Arkasından babasına seslenmiş.",
+          "\"Ey kanım taşıdığım baba, baba olaydın beni suya düşürmezdin, başını alıp gitmezdin.\"",
+          "Canavara kapılan da içini bir iyice dökmüş, o da kardeşi gibi babasına seslenmiş.",
+          "\"Ey babam, baba olaydın canavarın kaptığı oğlunu yalnız bırakmazdın, keyf çatıp dünyanın zevk-ü sefasını sürmezdin.\"",
+          "Ayının kaptığı oğul da dayanamamış, seslenmiş:",
+          "\"Ey babam, baba olan evlâdını ayı kapar da bakar mı?\"",
+          "Hatun da feryadı basmış:",
+          "\"Hatunu dev kapar da bey muhtarlıkta keyf mi çatar.\"",
+          "Bey haklısınız demiş. Boynunu bükmüş. Sarılmış çocuklarına almış hanımını yanına gelmişler anlatılamayacak kadar dillere destan güzel evlerine.",
+          "Gökten üç elma düşmüş, üçünden de biri birinden güzel üç kız çıkmış. Biri nar tanesi mi desem nur tanesi mi, diğer ise ay yüzlü şehla bakışlı, tatlı gülüşlü imiş, ömrü de yay kaşlı tatlı gülüşlü şeker gibi bir şeymiş. Üçünü de üç kardeş almış. Onlar ermiş muradına darısı sizlerin başına…",
+        ],
+      },
+    ];
+    // === MASAL VERİSİ BİTİŞ ===
+
+/* Her masalın bir motifi var. Motifler yukarıda #liste-motif içinde
+   MASALLAR dizisiyle AYNI SIRADA duruyor; kod sıra numarasıyla eşleştiriyor. */
+
+/* ===========================================================================
+   2. KISA YOLLAR
+   Sık kullanılan iki yardımcı. Kodun geri kalanı bunları kullanır.
+   =========================================================================== */
+function bul(secici) {
+  return document.querySelector(secici);
+}
+
+function yeni(etiket, metin) {
+  const e = document.createElement(etiket);
+  if (metin !== undefined) e.textContent = metin;   // innerHTML kullanılmıyor
+  return e;
+}
+
+/* Türkçe'ye uygun küçük harfe çevirme (İ/ı farkı için) */
+function kucuk(yazi) {
+  return yazi.toLocaleLowerCase("tr");
+}
+
+/* ===========================================================================
+   3. DURUM
+   Sayfanın o anki hâli tek bir nesnede tutulur.
+   =========================================================================== */
+const durum = {
+  acikIndeks: 0,        // okunan masalın MASALLAR dizisindeki yeri
+  arama: "",            // arama kutusundaki yazı
+  etiket: "",           // seçili etiket ("" ise süzme yok)
+  tumEtiketler: false,  // etiket listesi tamamen açık mı
+  yaziBoyutu: 20,       // px
+  aralik: 1.7,          // satır aralığı
+  tema: "acik",
+  okunanlar: []         // bitirilen masalların id'leri
+};
+
+/* ===========================================================================
+   4. AYARLARI SAKLAMA (localStorage)
+   Tarayıcı izin vermezse sayfa yine çalışsın diye try/catch içinde.
+   =========================================================================== */
+const SAKLAMA_ANAHTARI = "turk-masallari-ayarlar";
+
+function ayarlariKaydet() {
+  try {
+    localStorage.setItem(SAKLAMA_ANAHTARI, JSON.stringify({
+      yaziBoyutu: durum.yaziBoyutu,
+      aralik: durum.aralik,
+      tema: durum.tema,
+      sonMasal: MASALLAR[durum.acikIndeks].id,
+      okunanlar: durum.okunanlar
+    }));
+  } catch (hata) {
+    /* Gizli sekmede veya izin kapalıysa buraya düşer; sorun değil. */
+  }
+}
+
+function ayarlariYukle() {
+  try {
+    const ham = localStorage.getItem(SAKLAMA_ANAHTARI);
+    if (!ham) return;
+    const kayit = JSON.parse(ham);
+    if (typeof kayit.yaziBoyutu === "number") durum.yaziBoyutu = kayit.yaziBoyutu;
+    if (typeof kayit.aralik === "number") durum.aralik = kayit.aralik;
+    if (typeof kayit.tema === "string") durum.tema = kayit.tema;
+    if (Array.isArray(kayit.okunanlar)) durum.okunanlar = kayit.okunanlar;
+    if (typeof kayit.sonMasal === "string") {
+      const yer = MASALLAR.findIndex(m => m.id === kayit.sonMasal);
+      if (yer !== -1) durum.acikIndeks = yer;
+    }
+  } catch (hata) {
+    /* Bozuk kayıt varsa varsayılan ayarlarla devam et. */
+  }
+}
+
+/* ===========================================================================
+   5. SÜZME — arama ve etiket birlikte çalışır
+   =========================================================================== */
+function masalUyuyorMu(masal) {
+  // Etiket süzgeci
+  if (durum.etiket && !masal.etiketler.includes(durum.etiket)) return false;
+
+  // Arama: başlıkta veya metinde
+  if (durum.arama) {
+    const aranan = kucuk(durum.arama);
+    const basliktaVar = kucuk(masal.baslik).includes(aranan);
+    const metindeVar = masal.metin.some(p => kucuk(p).includes(aranan));
+    if (!basliktaVar && !metindeVar) return false;
+  }
+  return true;
+}
+
+function suzulmusMasallar() {
+  return MASALLAR.filter(masalUyuyorMu);
+}
+
+/* ===========================================================================
+   6. MASAL LİSTESİ (Masallar bölümü)
+   =========================================================================== */
+function okundumu(masal) {
+  return durum.okunanlar.includes(masal.id);
+}
+
+function listeyiCiz() {
+  const liste = bul("#masal-listesi");
+  liste.textContent = "";                      // önce temizle
+
+  const gosterilecek = suzulmusMasallar();
+
+  gosterilecek.forEach(masal => {
+    const indeks = MASALLAR.indexOf(masal);
+
+    const satir = yeni("li");
+    satir.className = "masal-satir";
+
+    const dugme = yeni("button");
+    dugme.className = "masal-dugme";
+    dugme.type = "button";
+    if (indeks === durum.acikIndeks) dugme.setAttribute("aria-current", "true");
+
+    // Başlık (okunduysa önünde dolu elma)
+    const adAlani = yeni("span");
+    if (okundumu(masal)) {
+      const isaret = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      isaret.setAttribute("class", "okundu-isaret");
+      isaret.setAttribute("viewBox", "0 0 24 28");
+      isaret.setAttribute("aria-hidden", "true");
+      const kullan = document.createElementNS("http://www.w3.org/2000/svg", "use");
+      kullan.setAttribute("href", "#elma-yol");
+      isaret.appendChild(kullan);
+      adAlani.appendChild(isaret);
+      const okunduYazi = yeni("span", "Okundu: ");
+      okunduYazi.className = "gizli-metin";
+      adAlani.appendChild(okunduYazi);
+    }
+    adAlani.appendChild(document.createTextNode(masal.baslik));
+    dugme.appendChild(adAlani);
+
+    // Sağda etiketler
+    const etiketAlani = yeni("span", masal.etiketler.join(" · "));
+    etiketAlani.className = "satir-etiket";
+    dugme.appendChild(etiketAlani);
+
+    dugme.addEventListener("click", () => masalAc(indeks, true));
+    dugme.addEventListener("mouseenter", () => motifiDegistir(indeks));
+    dugme.addEventListener("focus", () => motifiDegistir(indeks));
+
+    satir.appendChild(dugme);
+
+    // Açık masalın altında kısa bir tanıtım satırı belirir
+    if (indeks === durum.acikIndeks) {
+      const ozet = yeni("p", ilkCumleler(masal));
+      ozet.className = "satir-ozet";
+      satir.appendChild(ozet);
+    }
+
+    liste.appendChild(satir);
+  });
+
+  // Sonuç sayısını duyur
+  const sayi = gosterilecek.length;
+  let bilgi = sayi + " masal";
+  if (durum.arama) bilgi += ' · "' + durum.arama + '" aramasıyla';
+  if (durum.etiket) bilgi += " · " + durum.etiket;
+  bul("#sonuc-sayisi").textContent = sayi === 0 ? "Eşleşen masal yok." : bilgi;
+}
+
+/* Listede gösterilecek kısa tanıtım: metnin ilk ~140 karakteri */
+function ilkCumleler(masal) {
+  const ilk = masal.metin[0] || "";
+  if (ilk === "[METİN EKLENECEK]") return "Metin henüz eklenmedi.";
+  if (ilk.length <= 140) return ilk;
+  return ilk.slice(0, 140).trimEnd() + "…";
+}
+
+/* ===========================================================================
+   7. ETİKET SÜZGECİ
+   Etiketler veriden toplanır; elle liste tutulmaz.
+   =========================================================================== */
+function etiketleriCiz() {
+  const sira = bul("#etiket-sira");
+  sira.textContent = "";
+
+  // Her etiketin kaç masalda geçtiğini say
+  const sayac = {};
+  MASALLAR.forEach(m => m.etiketler.forEach(e => {
+    sayac[e] = (sayac[e] || 0) + 1;
+  }));
+
+  // Çok masalda geçen etiketler önce gelsin, eşitlikte alfabetik
+  const hepsi = Object.keys(sayac).sort((a, b) => {
+    if (sayac[b] !== sayac[a]) return sayac[b] - sayac[a];
+    return a.localeCompare(b, "tr");
+  });
+
+  // Etiket çok olduğu için başta yalnızca en sık geçen ONU gösterilir.
+  // Seçili etiket listede yoksa o da gösterilir ki düğmesi kaybolmasın.
+  let gosterilecek = durum.tumEtiketler ? hepsi : hepsi.slice(0, 10);
+  if (durum.etiket && !gosterilecek.includes(durum.etiket)) {
+    gosterilecek = gosterilecek.concat([durum.etiket]);
+  }
+
+  // "Tümü" düğmesi + her etiket için bir düğme
+  const girdiler = [{ ad: "Tümü", deger: "" }].concat(
+    gosterilecek.map(e => ({ ad: e, deger: e }))
+  );
+
+  girdiler.forEach(girdi => {
+    const dugme = yeni("button", girdi.ad);
+    dugme.type = "button";
+    dugme.className = "etiket-dugme";
+    dugme.dataset.etiket = girdi.deger;
+    dugme.setAttribute("aria-pressed", String(durum.etiket === girdi.deger));
+    dugme.addEventListener("click", () => {
+      durum.etiket = girdi.deger;
+      // Düğmeleri yeniden üretmek yerine yerinde güncelle:
+      // yeniden üretilseydi klavyeyle gezen kullanıcının odağı kaybolurdu.
+      basiliEtiketiGuncelle();
+      listeyiCiz();
+    });
+    sira.appendChild(dugme);
+  });
+
+  // Kalan etiketleri açıp kapatan düğme
+  const kalan = hepsi.length - 10;
+  if (kalan > 0) {
+    const ac = yeni("button", durum.tumEtiketler ? "Daha az etiket" : kalan + " etiket daha");
+    ac.type = "button";
+    ac.className = "etiket-dugme etiket-daha";
+    ac.setAttribute("aria-expanded", String(durum.tumEtiketler));
+    ac.addEventListener("click", () => {
+      durum.tumEtiketler = !durum.tumEtiketler;
+      etiketleriCiz();
+      // Liste yeniden üretildi; odağı aynı düğmeye geri koy
+      const yeniDugme = bul("#etiket-sira").querySelector(".etiket-daha");
+      if (yeniDugme) yeniDugme.focus();
+    });
+    sira.appendChild(ac);
+  }
+}
+
+/* Hangi etiket düğmesinin basılı göründüğünü günceller. */
+function basiliEtiketiGuncelle() {
+  bul("#etiket-sira").querySelectorAll(".etiket-dugme").forEach(dugme => {
+    if (dugme.classList.contains("etiket-daha")) return;
+    dugme.setAttribute("aria-pressed", String(dugme.dataset.etiket === durum.etiket));
+  });
+}
+
+/* ===========================================================================
+   8. MASAL AÇMA
+   =========================================================================== */
+function masalAc(indeks, kaydir) {
+  durum.acikIndeks = indeks;
+  const masal = MASALLAR[indeks];
+
+  bul("#masal-baslik").textContent = masal.baslik;
+
+  // Etiketler
+  const etiketAlani = bul("#masal-etiketler");
+  etiketAlani.textContent = "";
+  masal.etiketler.forEach(e => etiketAlani.appendChild(yeni("span", e)));
+
+  // Metin: her paragraf kendi <p>'si olur
+  const metinAlani = bul("#masal-metin");
+  metinAlani.textContent = "";
+  masal.metin.forEach(paragraf => {
+    if (paragraf === "[METİN EKLENECEK]") {
+      const uyari = yeni("p", "[METİN EKLENECEK] — bu masalın metni masallar/" + masal.id + ".md dosyasına eklenecek.");
+      uyari.className = "metin-yok";
+      metinAlani.appendChild(uyari);
+    } else {
+      metinAlani.appendChild(paragrafCiz(paragraf));
+    }
+  });
+
+  // Kaynak künyesi
+  bul("#masal-kaynak").textContent = masal.kaynak
+    ? "Kaynak: " + masal.kaynak
+    : "Kaynak künyesi henüz girilmedi.";
+
+  motifiDegistir(indeks);
+  gezinmeyiGuncelle();
+  listeyiCiz();
+  rayiCiz();
+  ilerlemeyiHesapla();
+  ayarlariKaydet();
+
+  if (kaydir) {
+    bul("#okuma").scrollIntoView({ behavior: "smooth", block: "start" });
+    // Klavyeyle gezen kullanıcı için odağı masalın başlığına taşı;
+    // yoksa liste yeniden çizildiği için odak sayfanın başına düşerdi.
+    bul("#masal-baslik").focus();
+  }
+}
+
+/* Bir paragrafı <p> olarak çizer; arama varsa eşleşmeleri <mark> ile vurgular.
+   innerHTML kullanılmaz, parçalar metin düğümü olarak eklenir. */
+function paragrafCiz(paragraf) {
+  const p = yeni("p");
+
+  if (!durum.arama) {
+    p.textContent = paragraf;
+    return p;
+  }
+
+  const aranan = kucuk(durum.arama);
+  const kucukParagraf = kucuk(paragraf);
+  let yer = 0;
+
+  while (true) {
+    const bulunan = kucukParagraf.indexOf(aranan, yer);
+    if (bulunan === -1) {
+      p.appendChild(document.createTextNode(paragraf.slice(yer)));
+      break;
+    }
+    p.appendChild(document.createTextNode(paragraf.slice(yer, bulunan)));
+    p.appendChild(yeni("mark", paragraf.slice(bulunan, bulunan + aranan.length)));
+    yer = bulunan + aranan.length;
+  }
+  return p;
+}
+
+/* ===========================================================================
+   9. MOTİF DEĞİŞTİRME — yavaş geçiş
+   =========================================================================== */
+function motifiDegistir(indeks) {
+  const motifler = bul("#liste-motif").querySelectorAll(".motif");
+  motifler.forEach((motif, sira) => {
+    motif.classList.toggle("acik", sira === indeks);
+  });
+  bul("#motif-alt").textContent = MASALLAR[indeks].baslik;
+}
+
+/* ===========================================================================
+   10. ÖNCEKİ / SONRAKİ MASAL
+   =========================================================================== */
+function gezinmeyiGuncelle() {
+  const onceki = durum.acikIndeks - 1;
+  const sonraki = durum.acikIndeks + 1;
+
+  const onckDugme = bul("#onceki-dugme");
+  const snrkDugme = bul("#sonraki-dugme");
+
+  onckDugme.disabled = onceki < 0;
+  snrkDugme.disabled = sonraki >= MASALLAR.length;
+
+  bul("#onceki-ad").textContent = onceki >= 0 ? MASALLAR[onceki].baslik : "Listenin başı";
+  bul("#sonraki-ad").textContent = sonraki < MASALLAR.length ? MASALLAR[sonraki].baslik : "Listenin sonu";
+}
+
+function gezinmeyiBagla() {
+  bul("#onceki-dugme").addEventListener("click", () => {
+    if (durum.acikIndeks > 0) masalAc(durum.acikIndeks - 1, false);
+  });
+  bul("#sonraki-dugme").addEventListener("click", () => {
+    if (durum.acikIndeks < MASALLAR.length - 1) masalAc(durum.acikIndeks + 1, false);
+  });
+}
+
+/* ===========================================================================
+   11. KENAR MENÜ (okuma bölümündeki ray)
+   =========================================================================== */
+function rayiCiz() {
+  const liste = bul("#ray-liste");
+  liste.textContent = "";
+
+  MASALLAR.forEach((masal, indeks) => {
+    const satir = yeni("li");
+    const dugme = yeni("button", masal.baslik);
+    dugme.type = "button";
+    if (indeks === durum.acikIndeks) dugme.setAttribute("aria-current", "true");
+    dugme.addEventListener("click", () => masalAc(indeks, false));
+    satir.appendChild(dugme);
+    liste.appendChild(satir);
+  });
+}
+
+/* ===========================================================================
+   12. OKUMA AYARLARI
+   =========================================================================== */
+const EN_KUCUK_YAZI = 18;   // ödev en az 18px istiyor
+const EN_BUYUK_YAZI = 28;
+
+function ayarlariUygula() {
+  document.documentElement.style.setProperty("--tip-govde", durum.yaziBoyutu + "px");
+  document.documentElement.style.setProperty("--metin-aralik", String(durum.aralik));
+  document.documentElement.setAttribute("data-tema", durum.tema);
+
+  bul("#yazi-olcu").textContent = durum.yaziBoyutu + "px";
+  bul("#yazi-kucult").disabled = durum.yaziBoyutu <= EN_KUCUK_YAZI;
+  bul("#yazi-buyult").disabled = durum.yaziBoyutu >= EN_BUYUK_YAZI;
+
+  // Hangi düğme basılı görünecek
+  bul("#aralik-sira").querySelectorAll("button").forEach(d => {
+    d.setAttribute("aria-pressed", String(Number(d.dataset.aralik) === durum.aralik));
+  });
+  bul("#tema-sira").querySelectorAll("button").forEach(d => {
+    d.setAttribute("aria-pressed", String(d.dataset.tema === durum.tema));
+  });
+}
+
+function ayarDugmeleriniBagla() {
+  bul("#yazi-kucult").addEventListener("click", () => {
+    durum.yaziBoyutu = Math.max(EN_KUCUK_YAZI, durum.yaziBoyutu - 2);
+    ayarlariUygula();
+    ayarlariKaydet();
+  });
+
+  bul("#yazi-buyult").addEventListener("click", () => {
+    durum.yaziBoyutu = Math.min(EN_BUYUK_YAZI, durum.yaziBoyutu + 2);
+    ayarlariUygula();
+    ayarlariKaydet();
+  });
+
+  bul("#aralik-sira").querySelectorAll("button").forEach(dugme => {
+    dugme.addEventListener("click", () => {
+      durum.aralik = Number(dugme.dataset.aralik);
+      ayarlariUygula();
+      ayarlariKaydet();
+    });
+  });
+
+  bul("#tema-sira").querySelectorAll("button").forEach(dugme => {
+    dugme.addEventListener("click", () => {
+      durum.tema = dugme.dataset.tema;
+      ayarlariUygula();
+      ayarlariKaydet();
+    });
+  });
+}
+
+/* ===========================================================================
+   13. ARAMA
+   =========================================================================== */
+function aramayiBagla() {
+  bul("#arama").addEventListener("input", olay => {
+    durum.arama = olay.target.value.trim();
+    // Listeyi yenile ve açık masalın metnindeki vurguyu güncelle
+    masalAc(durum.acikIndeks, false);
+  });
+}
+
+/* ===========================================================================
+   14. OKUMA İLERLEMESİ — ÜÇ ELMA
+   Masal metninin ne kadarının ekranın üstünden geçtiğini ölçer ve
+   üç elmayı sırayla doldurur.
+   =========================================================================== */
+function ilerlemeyiHesapla() {
+  const metin = bul("#masal-metin");
+  const kutu = metin.getBoundingClientRect();
+  const ekran = window.innerHeight;
+
+  // Metnin ne kadarı okundu: üstü ekranın üstüne geldiğinden itibaren say
+  const okunan = ekran - kutu.top;
+  const toplam = kutu.height;
+  let oran = toplam > 0 ? okunan / toplam : 0;
+  if (oran < 0) oran = 0;
+  if (oran > 1) oran = 1;
+
+  elmalariDoldur(oran);
+
+  // Sonuna gelindiyse masalı "okundu" olarak işaretle.
+  // Metni henüz eklenmemiş masallar işaretlenmez.
+  const masal = MASALLAR[durum.acikIndeks];
+  if (oran >= 0.98 && metniVar(masal)) {
+    if (!durum.okunanlar.includes(masal.id)) {
+      durum.okunanlar.push(masal.id);
+      ayarlariKaydet();
+      listeyiCiz();
+    }
+  }
+}
+
+/* Masalın metni gerçekten eklenmiş mi? */
+function metniVar(masal) {
+  return masal.metin.length > 0 && masal.metin[0] !== "[METİN EKLENECEK]";
+}
+
+function elmalariDoldur(oran) {
+  // Her elma ilerlemenin üçte birini gösterir
+  for (let i = 0; i < 3; i++) {
+    let pay = (oran - i / 3) * 3;      // bu elmanın dolum oranı
+    if (pay < 0) pay = 0;
+    if (pay > 1) pay = 1;
+
+    // Elma çizimi kendi kutusunda y = 2 ile y = 26 arasında duruyor.
+    // Dolum dikdörtgeni aşağıdan yukarı büyür.
+    const yukseklik = 24 * pay;
+    const dikdortgen = bul("#dolum-" + (i + 1) + "-r");
+    dikdortgen.setAttribute("y", String(26 - yukseklik));
+    dikdortgen.setAttribute("height", String(yukseklik));
+  }
+
+  const yuzde = Math.round(oran * 100);
+  bul("#elma-gosterge").setAttribute("aria-valuenow", String(yuzde));
+  bul("#elma-yazi").textContent = yuzde + "%";
+}
+
+/* ===========================================================================
+   15. TELEFONDA AÇILIR MENÜ
+   =========================================================================== */
+function menuyuBagla() {
+  const dugme = bul("#menu-dugme");
+  const liste = bul("#ray-liste");
+
+  // Telefonda liste kapalı başlar
+  const telefonSorgu = window.matchMedia("(max-width: 960px)");
+
+  function baslangicDurumu() {
+    const telefon = telefonSorgu.matches;
+    liste.dataset.acik = telefon ? "hayir" : "evet";
+    dugme.setAttribute("aria-expanded", telefon ? "false" : "true");
+  }
+  baslangicDurumu();
+
+  // Yalnızca masaüstü/telefon eşiği geçildiğinde sıfırla.
+  // "resize" kullanılsaydı telefonda adres çubuğu gizlenince menü kapanırdı.
+  telefonSorgu.addEventListener("change", baslangicDurumu);
+
+  dugme.addEventListener("click", () => {
+    const acik = liste.dataset.acik === "evet";
+    liste.dataset.acik = acik ? "hayir" : "evet";
+    dugme.setAttribute("aria-expanded", String(!acik));
+  });
+}
+
+/* ===========================================================================
+   16. GİRİŞ HAREKETİ
+   Bölüm parçaları ekrana girdikçe sırayla belirir.
+   =========================================================================== */
+function girisHareketi() {
+  const parcalar = document.querySelectorAll(".beliren");
+
+  if (!("IntersectionObserver" in window)) return;   // içerik görünür kalsın
+
+  // Gizleme kuralı ancak buradan sonra devreye girer
+  document.documentElement.classList.add("js");
+
+  const gozlemci = new IntersectionObserver((girdiler) => {
+    girdiler.forEach((girdi, sira) => {
+      if (girdi.isIntersecting) {
+        window.setTimeout(() => girdi.target.classList.add("gorundu"), sira * 80);
+        gozlemci.unobserve(girdi.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  parcalar.forEach(p => gozlemci.observe(p));
+}
+
+/* ===========================================================================
+   17. BAŞA DÖN
+   =========================================================================== */
+function basaDonBagla() {
+  bul("#basa-don").addEventListener("click", olay => {
+    olay.preventDefault();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+
+/* ===========================================================================
+   18. BAŞLAT
+   =========================================================================== */
+function baslat() {
+  ayarlariYukle();
+  ayarlariUygula();
+  ayarDugmeleriniBagla();
+  aramayiBagla();
+  gezinmeyiBagla();
+  menuyuBagla();
+  basaDonBagla();
+
+  etiketleriCiz();
+  rayiCiz();
+  masalAc(durum.acikIndeks, false);
+
+  bul("#menu-dugme").textContent = "Masal seç (" + MASALLAR.length + ")";
+
+  window.addEventListener("scroll", ilerlemeyiHesapla, { passive: true });
+  window.addEventListener("resize", ilerlemeyiHesapla);
+  ilerlemeyiHesapla();
+
+  girisHareketi();
+}
+
+baslat();
+</script>
+
+</body>
+</html>
