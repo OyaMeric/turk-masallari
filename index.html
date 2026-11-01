@@ -2076,6 +2076,7 @@ function ayarlariUygula() {
   bul("#tema-sira").querySelectorAll("button").forEach(d => {
     d.setAttribute("aria-pressed", String(d.dataset.tema === durum.tema));
   });
+  requestAnimationFrame(ilerlemeyiHesapla);
 }
 
 function ayarDugmeleriniBagla() {
@@ -2129,10 +2130,14 @@ function ilerlemeyiHesapla() {
   const kutu = metin.getBoundingClientRect();
   const ekran = window.innerHeight;
 
-  // Metnin ne kadarı okundu: üstü ekranın üstüne geldiğinden itibaren say
-  const okunan = ekran - kutu.top;
-  const toplam = kutu.height;
-  let oran = toplam > 0 ? okunan / toplam : 0;
+  // Başlık üst çubuğun altına geldiğinde %0; metnin sonu göründüğünde %100.
+  // Ekranda başlangıçta görünen metin, ilerlemeye peşinen eklenmez.
+  const kaydirma = window.scrollY;
+  const ustBosluk = bul(".ust").getBoundingClientRect().height + 16;
+  const baslangic = Math.max(0,
+    kaydirma + bul("#masal-baslik").getBoundingClientRect().top - ustBosluk);
+  const bitis = Math.max(baslangic + 1, kaydirma + kutu.bottom - ekran);
+  let oran = kutu.height > 0 ? (kaydirma - baslangic) / (bitis - baslangic) : 0;
   if (oran < 0) oran = 0;
   if (oran > 1) oran = 1;
 
