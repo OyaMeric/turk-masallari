@@ -443,6 +443,17 @@ a {
   top: 72px;
   align-self: start;
 }
+/* Masaüstünde uzun kenar menü, masal metninden bağımsız kaydırılır. */
+@media (min-width: 961px) {
+  .ray {
+    max-height: calc(100vh - 88px);
+    max-height: calc(100dvh - 88px);
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    padding-right: var(--bosluk-1);
+  }
+}
+
 .ray h2 { font-size: var(--tip-baslik); margin-bottom: var(--bosluk-3); }
 
 .ray-liste { list-style: none; margin: 0 0 var(--bosluk-5); padding: 0; }
@@ -489,6 +500,24 @@ a {
   color: var(--renk-zemin);
 }
 .ayar-olcu { font-size: var(--tip-kucuk); color: var(--renk-soluk); align-self: center; }
+
+/* Okuma sırasında erişilebilir kalan, masala özel yer imi denetimleri. */
+.yer-cubugu {
+  position: sticky;
+  top: var(--yer-cubugu-ust, 80px);
+  z-index: 20;
+  background: var(--renk-kagit);
+  padding: var(--bosluk-1) 0;
+  margin-bottom: var(--bosluk-3);
+}
+.yer-dugmeleri { display: flex; flex-wrap: wrap; gap: var(--bosluk-1); }
+.yer-durumu {
+  display: block;
+  margin-top: 4px;
+  color: var(--renk-soluk);
+  font-size: var(--tip-kucuk);
+  line-height: 1.4;
+}
 
 /* --- Masal metni --- */
 .masal {
@@ -1029,6 +1058,13 @@ a {
       <div class="masal-ust">
         <h2 id="masal-baslik" tabindex="-1">—</h2>
         <p class="masal-etiket-sira" id="masal-etiketler"></p>
+      </div>
+      <div class="yer-cubugu" id="yer-cubugu" role="group" aria-label="Okuma yer imi">
+        <div class="yer-dugmeleri">
+          <button type="button" class="ayar-dugme" id="yer-kaydet">Yerimi kaydet</button>
+          <button type="button" class="ayar-dugme" id="yere-don" disabled>Kaldığım yere dön</button>
+        </div>
+        <span class="yer-durumu" id="yer-durumu" role="status" aria-live="polite">Bu masalda kayıtlı yer yok.</span>
       </div>
       <div class="masal-metin" id="masal-metin"></div>
       <p class="kaynak-kunye" id="masal-kaynak"></p>
@@ -1618,6 +1654,90 @@ function ayarlariYukle() {
   }
 }
 
+/* YER İMLERİ — her masal için paragraf ve paragraf içindeki konum saklanır.
+   Böylece yazı boyutu veya ekran genişliği değişse de aynı paragrafa dönülür.
+   Eski ayar/okundu kayıtları kendi anahtarında, değişmeden kalır. */
+const YER_ANAHTARI = "turk-masallari-yer-isaretleri";
+const yerIsaretleri = Object.create(null);
+
+function yerIsaretleriniYukle() {
+  try {
+    const kayitlar = JSON.parse(localStorage.getItem(YER_ANAHTARI) || "{}");
+    if (!kayitlar || typeof kayitlar !== "object") return;
+    MASALLAR.forEach(masal => {
+      const kayit = kayitlar[masal.id];
+      if (kayit && Number.isInteger(kayit.paragraf) &&
+          kayit.paragraf >= 0 && kayit.paragraf < masal.metin.length &&
+          Number.isFinite(kayit.oran) && kayit.oran >= 0 && kayit.oran <= 1) {
+        yerIsaretleri[masal.id] = { paragraf: kayit.paragraf, oran: kayit.oran };
+      }
+    });
+  } catch (hata) {
+    // Kayıt bozuksa veya saklama engelliyse sayfa çalışmaya devam eder.
+  }
+}
+
+function yerCubuguKonumunuGuncelle() {
+  const ust = bul(".ust").getBoundingClientRect().height + 8;
+  document.documentElement.style.setProperty("--yer-cubugu-ust", ust + "px");
+}
+
+function yerIsaretiOkumaCizgisi() {
+  return bul(".ust").getBoundingClientRect().height + 8 +
+    bul("#yer-cubugu").getBoundingClientRect().height + 8;
+}
+
+function yerIsaretiDurumunuGuncelle() {
+  const kayit = yerIsaretleri[MASALLAR[durum.acikIndeks].id];
+  bul("#yere-don").disabled = !kayit;
+  bul("#yer-durumu").textContent = kayit
+    ? "Bu masalda kayıtlı yerin var."
+    : "Bu masalda kayıtlı yer yok.";
+}
+
+function okumaYeriniKaydet() {
+  yerCubuguKonumunuGuncelle();
+  const paragraflar = Array.from(bul("#masal-metin").querySelectorAll("p"));
+  if (!paragraflar.length) return;
+  const cizgi = yerIsaretiOkumaCizgisi();
+  let indeks = paragraflar.findIndex(p => p.getBoundingClientRect().bottom > cizgi);
+  if (indeks === -1) indeks = paragraflar.length - 1;
+  const kutu = paragraflar[indeks].getBoundingClientRect();
+  const oran = kutu.height > 0 ? Math.max(0, Math.min(1, (cizgi - kutu.top) / kutu.height)) : 0;
+  yerIsaretleri[MASALLAR[durum.acikIndeks].id] = { paragraf: indeks, oran };
+  let kalici = false;
+  try {
+    localStorage.setItem(YER_ANAHTARI, JSON.stringify(yerIsaretleri));
+    kalici = true;
+  } catch (hata) {
+    // Bu oturumda dönülebilir; kalıcı kayıt yapılamadığı açıkça bildirilir.
+  }
+  yerIsaretiDurumunuGuncelle();
+  bul("#yer-durumu").textContent = kalici
+    ? "Yer kaydedildi. Bu tarayıcıda saklanır."
+    : "Kalıcı kayıt yapılamadı; yerin yalnızca bu oturumda tutuluyor.";
+}
+
+function kayitliYereDon() {
+  const kayit = yerIsaretleri[MASALLAR[durum.acikIndeks].id];
+  if (!kayit) return;
+  const paragraf = bul("#masal-metin").querySelectorAll("p")[kayit.paragraf];
+  if (!paragraf) return;
+  bul("#yer-durumu").textContent = "Kayıtlı yere dönüldü.";
+  yerCubuguKonumunuGuncelle();
+  const kutu = paragraf.getBoundingClientRect();
+  const hedef = window.scrollY + kutu.top + kutu.height * kayit.oran - yerIsaretiOkumaCizgisi();
+  window.scrollTo({ top: Math.max(0, hedef), behavior: "instant" });
+  ilerlemeyiHesapla();
+}
+
+function yerIsaretiDugmeleriniBagla() {
+  bul("#yer-kaydet").addEventListener("click", okumaYeriniKaydet);
+  bul("#yere-don").addEventListener("click", kayitliYereDon);
+  yerCubuguKonumunuGuncelle();
+  window.addEventListener("resize", yerCubuguKonumunuGuncelle);
+}
+
 /* ===========================================================================
    5. SÜZME — arama ve etiket birlikte çalışır
    =========================================================================== */
@@ -1824,14 +1944,26 @@ function masalAc(indeks, kaydir) {
     ? "Kaynak: " + masal.kaynak
     : "Kaynak künyesi henüz girilmedi.";
 
+  yerIsaretiDurumunuGuncelle();
   motifiDegistir(indeks);
   gezinmeyiGuncelle();
   listeyiCiz();
   rayiCiz();
+
+  if (kaydir === "baslik") {
+    // Önceki/sonraki geçişinde yeni başlığı üst çubuğun altında göster.
+    // Odağın otomatik kaydırması ve yumuşak kaydırma birbiriyle yarışmasın.
+    const baslik = bul("#masal-baslik");
+    baslik.focus({ preventScroll: true });
+    const ustBosluk = bul(".ust").getBoundingClientRect().height + 16;
+    const hedef = window.scrollY + baslik.getBoundingClientRect().top - ustBosluk;
+    window.scrollTo({ top: Math.max(0, hedef), behavior: "instant" });
+  }
+
   ilerlemeyiHesapla();
   ayarlariKaydet();
 
-  if (kaydir) {
+  if (kaydir === true) {
     bul("#okuma").scrollIntoView({ behavior: "smooth", block: "start" });
     // Klavyeyle gezen kullanıcı için odağı masalın başlığına taşı;
     // yoksa liste yeniden çizildiği için odak sayfanın başına düşerdi.
@@ -1896,10 +2028,10 @@ function gezinmeyiGuncelle() {
 
 function gezinmeyiBagla() {
   bul("#onceki-dugme").addEventListener("click", () => {
-    if (durum.acikIndeks > 0) masalAc(durum.acikIndeks - 1, false);
+    if (durum.acikIndeks > 0) masalAc(durum.acikIndeks - 1, "baslik");
   });
   bul("#sonraki-dugme").addEventListener("click", () => {
-    if (durum.acikIndeks < MASALLAR.length - 1) masalAc(durum.acikIndeks + 1, false);
+    if (durum.acikIndeks < MASALLAR.length - 1) masalAc(durum.acikIndeks + 1, "baslik");
   });
 }
 
@@ -1932,6 +2064,7 @@ function ayarlariUygula() {
   document.documentElement.style.setProperty("--metin-aralik", String(durum.aralik));
   document.documentElement.setAttribute("data-tema", durum.tema);
 
+  yerCubuguKonumunuGuncelle();
   bul("#yazi-olcu").textContent = durum.yaziBoyutu + "px";
   bul("#yazi-kucult").disabled = durum.yaziBoyutu <= EN_KUCUK_YAZI;
   bul("#yazi-buyult").disabled = durum.yaziBoyutu >= EN_BUYUK_YAZI;
@@ -2109,7 +2242,9 @@ function basaDonBagla() {
    =========================================================================== */
 function baslat() {
   ayarlariYukle();
+  yerIsaretleriniYukle();
   ayarlariUygula();
+  yerIsaretiDugmeleriniBagla();
   ayarDugmeleriniBagla();
   aramayiBagla();
   gezinmeyiBagla();
