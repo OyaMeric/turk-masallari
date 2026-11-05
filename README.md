@@ -3,7 +3,7 @@
 On Türk halk masalını, kaynaklarıyla birlikte, okumak için tek sayfada toplayan bir web
 sayfası. Programlamaya Giriş dersi vize ödevi.
 
-**Video:** [VİDEO BAĞLANTISI BURAYA]
+**Video:** https://www.youtube.com/watch?v=QUA7ZG3FlRw
 
 ---
 
