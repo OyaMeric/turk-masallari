@@ -1,0 +1,455 @@
+% ====================================================================
+% VİZE RAPOR ŞABLONU – Türk Masalları Derlemesi Web Sayfası
+% --------------------------------------------------------------------
+% DERLEME: Overleaf'te Menu > Compiler > XeLaTeX (pdfLaTeX de çalışır).
+%
+% KURALLAR (şablonu kullanmadan önce okuyun):
+%  1. Bölüm başlıklarını SİLMEYİN ve sırasını DEĞİŞTİRMEYİN.
+%  2. [KÖŞELİ PARANTEZ] içindeki ve gri renkli açıklama metinlerini
+%     kendi bilgilerinizle değiştirin; açıklama metinlerini silin.
+%  3. MEBİS'e YALNIZCA bu raporun PDF'ini yükleyin.
+%     ZIP ve HTML dosyası YÜKLEMEYİN. Tüm kontroller GitHub'dan yapılır.
+%  4. Kapaktaki GitHub ve YouTube bağlantıları doğru ve tıklanabilir
+%     olmalıdır. Teslimden önce PDF'teki bağlantılara tıklayıp deneyin.
+%  5. Haftalık katkı tablosundaki görseller için resim dosyalarını
+%     (hafta1.png, hafta2.png, ...) Overleaf projesine yükleyin.
+%     Dosya adlarında boşluk ve Türkçe karakter kullanmayın.
+%     Resim yoksa tabloda "görsel ekleyin" kutusu görünür.
+%  6. Yapay zekâ kullandıysanız Bölüm 5'i doldurun.
+% ====================================================================
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else
+  \usepackage{fontspec}
+  \setmainfont{Latin Modern Roman}
+  \setmonofont{Latin Modern Mono}
+\fi
+\usepackage[provide=*,turkish]{babel}
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{colortbl}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{amssymb}
+\usepackage{caption}
+\usepackage{fancyhdr}
+\usepackage{xurl}
+\usepackage{hyperref}
+
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setlist{itemsep=2pt, topsep=4pt}
+\hypersetup{colorlinks=true, linkcolor=blue!50!black, urlcolor=blue!50!black}
+
+\definecolor{ana}{HTML}{14325C}
+\definecolor{acik}{HTML}{EEF2F8}
+
+\lstset{basicstyle=\ttfamily\small, backgroundcolor=\color{acik},
+  frame=single, rulecolor=\color{ana}, breaklines=true,
+  columns=fullflexible, keepspaces=true, showstringspaces=false}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Türk Masalları Derlemesi}
+\fancyhead[R]{Vize Raporu}
+\fancyfoot[C]{\thepage}
+
+% ---------- Yardımcı komutlar ----------
+% Gri açıklama metni (silinecek yönergeler için)
+\newcommand{\aciklama}[1]{{\color{gray}\itshape (#1)}}
+
+% Haftalık tablo görseli: dosya yoksa "görsel ekleyin" kutusu çıkar
+\newcommand{\haftagorsel}[1]{%
+  \IfFileExists{#1}{%
+    \includegraphics[width=\linewidth,height=4.2cm,keepaspectratio]{#1}%
+  }{%
+    \fbox{\parbox[c][2.6cm][c]{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
+      \centering\small\color{gray} Ekran görüntüsü / görsel ekleyin\\ \texttt{#1}}}%
+  }%
+}
+% Haftalık katılım kutuları (işaretlemek için $\square$ yerine $\boxtimes$ yazın)
+\newcommand{\katilimkutulari}{\par\vspace{3pt}\small $\square$ Ders içinde katılım sergiledim\par $\square$ Telafi yaptım}
+
+% Ek görsel: dosya yoksa hiçbir şey göstermez
+\newcommand{\haftaek}[1]{%
+  \IfFileExists{#1}{\par\vspace{4pt}\includegraphics[width=\linewidth,height=4.2cm,keepaspectratio]{#1}}{}%
+}
+
+% ---------- Kapak bilgileri ----------
+\newcommand{\universite}{İstanbul Medipol Üniversitesi / Görsel İletişim Tasarımı}
+\newcommand{\dersadi}{Programlamaya Giriş}
+\newcommand{\hocaadi}{Meral Şentürk}
+\newcommand{\ogrenciadi}{Oya Meriç Alpay}
+\newcommand{\ogrencino}{86230035}
+\newcommand{\projeadi}{Türk Masalları Derlemesi}
+% Bağlantıları tam adres olarak yazın (https:// ile başlayarak)
+\newcommand{\githublink}{\url{https://github.com/OyaMeric/turk-masallari}}
+\newcommand{\youtubelink}{\url{https://youtu.be/QUA7ZG3FlRw}}
+
+
+\setlength{\headheight}{16pt}
+\setlength{\emergencystretch}{3em}
+\renewcommand{\today}{5 Kasım 2026}
+\newcommand{\bekleyen}[1]{\textcolor{ana}{\textit{#1}}}
+\begin{document}
+
+% ====================================================================
+% KAPAK
+% ====================================================================
+\begin{titlepage}
+\centering
+\vspace*{1cm}
+{\large \universite \par}
+\vspace{1.8cm}
+{\Huge\bfseries\color{ana} \projeadi \par}
+\vspace{0.4cm}
+{\Large Türk Masalları Derlemesi Web Sayfası \par}
+{\large Vize Raporu \par}
+\vspace{1.8cm}
+{\large \textbf{Ders:} \dersadi \par}
+{\large \textbf{Öğretim Üyesi:} \hocaadi \par}
+\vspace{1.2cm}
+{\large \textbf{Hazırlayan:} \ogrenciadi \par}
+{\large \textbf{Öğrenci No:} \ogrencino \par}
+\vspace{1.8cm}
+\fbox{\parbox{0.88\linewidth}{\centering\vspace{6pt}
+{\large\bfseries Proje Bağlantıları}\\[8pt]
+\textbf{GitHub deposu:}\\ \githublink \\[8pt]
+\textbf{YouTube sunum videosu:}\\ \youtubelink
+\vspace{6pt}}}
+\vfill
+{\large \today \par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ====================================================================
+
+\section{Giriş}
+Bu projede, on Türk halk masalını kaynak bilgileriyle birlikte sunduğum bir web sayfası hazırladım. Masal seçimini kolaylaştıran ve uzun metinlerin okunmasını destekleyen bir arayüz oluşturmayı amaçladım. HTML, CSS ve JavaScript kodlarını tek bir \texttt{index.html} dosyasında bir araya getirdim. İnternetsiz kullanımı desteklemek için dışarıdan yüklenen yazı tipi, kütüphane veya görsel kullanmadım. Masal seçimi, arama, etiketle süzme ve okuma ayarlarını JavaScript ile işlevsel hâle getirdim. Bu raporda seçkimi, tasarım kararlarımı, kodun çalışma mantığını, yararlandığım yapay zekâ desteğini ve test sonuçlarını açıklıyorum.
+
+\subsection{Proje Özeti}
+Arayüzü açılış, masal listesi, okuma alanı, derleme notu ve alt bilgi bölümlerinden oluşturdum. Masal seçme, başlık ve metin içinde arama, yazı boyutu ve satır aralığını değiştirme seçenekleri ekledim. Farklı okuma koşulları için açık, sepya ve koyu modlara yer verdim. Üstteki üç elmayı, açık masalın kaydırma konumuna bağlı ilerlemesini gösteren bir gösterge olarak kullandım. Ayarların, son seçilen masalın ve tamamlanan masalların tarayıcıda saklanmasını sağladım. Ayrıca ``Yerimi kaydet'' ve ``Kaldığım yere dön'' düğmeleriyle her masal için okuma konumunu kaydetme ve bu konuma geri dönme özelliği ekledim.
+
+\subsection{Gereksinimlerin Karşılanması}
+\begin{center}
+\begin{tabular}{@{}p{11.7cm}c@{}}
+\toprule
+\textbf{Gereksinim} & \textbf{Durum}\\\midrule
+Masal sayısı 8--12 arasında (10 masal) & $\boxtimes$\\
+Tek HTML dosyası & $\boxtimes$\\
+Stil kodları içsel (\texttt{<style>} içinde) & $\boxtimes$\\
+Betik kodları içsel (\texttt{<script>} içinde) & $\boxtimes$\\
+İnternetsiz açılıp çalışıyor & $\boxtimes$\\
+JavaScript sayfada anlamlı bir işlev görüyor & $\boxtimes$\\
+Sayfa telefonda da düzgün görünüyor & $\boxtimes$\\
+\bottomrule
+\end{tabular}
+\end{center}
+Çevrimdışı çalışmayı ve telefon görünümünü test ettim. Google Chrome ve Safari üzerinde gerçekleştirdiğim genel kullanım kontrollerini Test ve Değerlendirme bölümünde özetledim.
+
+\section{Masalların Seçimi}
+Masalları, olağanüstü olaylar, sihirli nesneler, devler, yasak mekânlar ve dönüşümler üzerinden gizemli ve fantastik bir atmosfer oluşturacak şekilde seçtim. Bu ortak atmosfer içinde aşk, merak, kurnazlık, dayanışma ve kardeş ilişkileri gibi farklı konulara yer verdim. Aşağıdaki tür adlarını bilimsel bir sınıflandırma olarak değil, seçkimi açıklayan tematik tanımlar olarak kullandım. Yararlanılan kaynak künyelerini Kaynakça bölümünde belirttim.
+
+\begin{longtable}{@{}p{0.5cm}>{\raggedright\arraybackslash}p{3.8cm}>{\raggedright\arraybackslash}p{2.4cm}>{\raggedright\arraybackslash}p{7cm}@{}}
+\toprule No & \textbf{Masal} & \textbf{Tür} & \textbf{Seçilme nedeni}\\\midrule\endhead
+1 & Keloğlan ve Altın Bülbül & Olağanüstü macera & Bülbül arayışı ve kardeş ilişkileriyle keşif temasını taşır.\\[6pt]
+2 & Hüsnü Yusuf & Aşk / olağanüstü & Kavuşma arayışıyla seçkinin duygusal yönünü güçlendirir.\\[6pt]
+3 & İncili Çadır & Saray / olağanüstü & Çadır ve inci imgeleriyle farklı bir görsel motif sağlar.\\[6pt]
+4 & Mitişik Kız & Dev / kurnazlık & Güç karşısında akıl ve çözüm üretme temasını işler.\\[6pt]
+5 & Keloğlan ile Yılan, Köpek, Kedi ve Balık & Sihirli nesne / hayvan dostluğu & Sihirli yüzük, yardım ve ihanet üzerinden olay çeşitliliği sunar.\\[6pt]
+6 & Öksüz Kız & Öksüz evlat / olağanüstü & Haksızlık ve değişen talih üzerinden farklı bir kahraman deneyimi sunar.\\[6pt]
+7 & Korkak Adam ve Devler & Dev / mizah & Korku ile kurnazlığı mizahi bir anlatıda birleştirir.\\[6pt]
+8 & Kırkıncı Oda & Yasak oda / merak & Kapalı kapı ve bilinmeyen mekân üzerinden gizemi öne çıkarır.\\[6pt]
+9 & Üç Turunçlar & Aşk / dönüşüm & Üçleme, arayış ve dönüşüm motiflerini bir araya getirir.\\[6pt]
+10 & Üç Oğlan & Üç kardeş / macera & Farklı yollar ve kardeşlik üzerinden seçkiyi tamamlar.\\
+\bottomrule
+\end{longtable}
+
+\section{Tasarım Kararları}
+Tasarımın merkezine metin okuma deneyimini yerleştirdim. Masal listesi ile okuma alanını ayrı bölümlerde düzenledim. Açılışta büyük bir başlık ve tek bir yönlendirme bağlantısı kullandım. Görsel kimliği renkli yüzeyler, serif yazı ailesi ve geometrik SVG motifleriyle oluşturdum.
+
+\subsection{Konuya Uygunluk}
+Parşömen ve kâğıt tonları kitap sayfasını; çini mavisi ve kilim şeritleri geleneksel görsel kültürü çağrıştırır. Her masala bülbül, çadır, yılan ve balık, iğ, devler, kapı veya turunç gibi bir motif eşlik eder. Motifler masal listesindeki öğenin üzerine gelindiğinde, klavyeyle odaklanıldığında veya masal seçildiğinde değişir. ``Gökten üç elma düştü'' kapanış kalıbından hareketle üç elmayı bir ilerleme göstergesine dönüştürdüm. Böylece masal temasını işlevsel bir arayüz öğesiyle ilişkilendirdim.
+
+\subsection{Renk Paleti ve Yazı Tipi}
+\begin{longtable}{@{}p{2.6cm}p{2.4cm}p{8.7cm}@{}}
+\toprule\textbf{Ad} & \textbf{Kod} & \textbf{Nerede / neden kullanıldı?}\\\midrule\endhead
+Parşömen & \texttt{\#f3ead9} & Genel zemin; sıcak ve sakin sayfa hissi.\\
+Kâğıt & \texttt{\#faf4e8} & Okuma bölümü ve bazı arayüz yüzeyleri.\\
+Koyu kahve & \texttt{\#2a1f17} & Açık temada başlıklar ve ana metin.\\
+Çini mavisi & \texttt{\#163a5f} & Açılış ve masal listesindeki motif alanları.\\
+Bordo & \texttt{\#8e2b2b} & Ana bağlantı, elma dolgusu ve seçili gezinme öğeleri.\\
+Hardal & \texttt{\#8a5f14} & Masal etiketleri.\\
+Serif ailesi & Georgia & Başlık, metin ve denetimlerde kitap hissini sürdürür.\\
+\bottomrule
+\end{longtable}
+Georgia bulunmadığında Palatino Linotype, Book Antiqua, Times New Roman veya sistemin serif yazı tipi kullanılır. Böylece internetten font indirilmez. Sepya ve koyu modlarda renk değişkenleri yeniden tanımlanır; aynı sayfa yapısı farklı okuma koşullarına uyarlanır.
+
+\subsection{Okunabilirlik, Gezinme ve Duyarlı Tasarım}
+\begin{itemize}
+\item \textbf{Okunabilirlik:} Masal metni başlangıçta 20 px, satır yüksekliği 1,7'dir. Yazı boyutu 18--28 px arasında; satır aralığı 1,5, 1,7 ve 1,95 olarak ayarlanabilir. Metin alanının azami genişliği 66ch'dir; bu değer her satırda tam 66 harf bulunacağını garanti etmez.
+\item \textbf{Gezinme:} Ana liste ve okuma bölümünün kenar menüsü masal seçimini sağlar. Önceki/sonraki düğmelerini veri sırasına göre çalışacak ve yeni masalın başına dönecek şekilde düzenledim. Arama ve etiket filtresi birlikte ana listeyi daraltır; kenar menü bütün masalları göstermeyi sürdürür.
+\item \textbf{Duyarlı tasarım:} 960 px ve altında bölümler tek sütuna iner, okuma menüsü açılır/kapanır hâle gelir. 420 px ve altında arama alanı ve üst çubuk için ek düzenlemeler uygulanır.
+\item \textbf{Tutarlılık:} Renk, boşluk ve yazı boyutları CSS değişkenlerinden yönetilir. Ortak düğme sınıfları, keskin köşeler ve aynı serif ailesi arayüzü birleştirir.
+\end{itemize}
+Masaüstünde okuma menüsüne bağımsız dikey kaydırma ekleyerek metnin sonuna inmeden alttaki ayarlara erişilmesini sağladım. Açılışta metin solda, çini alanı sağdadır. Masallar bölümünde motif solda, liste sağdadır. Okuma bölümünde ise solda menü ve ayarlar, sağda metin bulunur; masal motifi okuma alanının yanında sürekli duran bir panel değildir.
+
+\subsection{Ekran Görüntüleri}
+Sayfanın bilgisayar ve telefondaki görünümünü aşağıdaki ekran görüntüleriyle belgeledim. İlk dört görsel bilgisayardan, son üç görsel telefondan alınmıştır.
+
+\begin{minipage}{\linewidth}\centering
+\includegraphics[width=0.95\linewidth]{ekran-bilgisayar-1.png}
+\captionof{figure}{Bilgisayarda açılış ekranı ve ana gezinme alanı.}
+\end{minipage}\par\medskip
+\begin{minipage}{\linewidth}\centering
+\includegraphics[width=0.95\linewidth]{ekran-bilgisayar-2.png}
+\captionof{figure}{Bilgisayarda masal arama alanı ve şehzade etiketine göre filtrelenmiş masal listesi.}
+\end{minipage}\par\medskip
+\clearpage
+\begin{minipage}{\linewidth}\centering
+\includegraphics[width=0.95\linewidth]{ekran-bilgisayar-3.png}
+\captionof{figure}{Bilgisayarda masal okuma alanı, okuma ayarları ve yer kaydetme düğmeleri.}
+\end{minipage}\par\medskip
+\begin{minipage}{\linewidth}\centering
+\includegraphics[width=0.95\linewidth]{ekran-bilgisayar-4.png}
+\captionof{figure}{Bilgisayarda okuma sırasında yüzde 49 ilerleme ve üç elma göstergesi.}
+\end{minipage}\par\medskip
+\clearpage
+\begin{minipage}{\linewidth}\centering
+\includegraphics[width=0.31\linewidth]{ekran-telefon-1.png}\hfill
+\includegraphics[width=0.31\linewidth]{ekran-telefon-2.png}\hfill
+\includegraphics[width=0.31\linewidth]{ekran-telefon-3.png}
+\captionof{figure}{Telefonda soldan sağa: açılış ekranı; okuma ayarları ve masal metni; yüzde 100 ilerleme, kaydedilmiş okuma yeri, kaynak bilgisi ve önceki/sonraki masal bağlantıları.}
+\end{minipage}
+\clearpage
+
+\section{Gerçekleştirme}
+İçeriği ve etkileşimleri aynı HTML dosyasında topladım. Sayfayı, çalışırken bir sunucuya veya veri tabanına bağlanmaya ihtiyaç duymayacak şekilde hazırladım. Depodaki masal ve açıklama dosyaları içerik belgeleridir; tarayıcı sayfayı açarken bu dosyaları ayrıca yüklemez.
+
+\subsection{HTML Yapısı}
+\texttt{header} üst çubuğu, \texttt{nav} gezinme alanlarını, \texttt{section} ana bölümleri, \texttt{aside} okuma menüsünü, \texttt{main} ve \texttt{article} masal içeriğini, \texttt{footer} alt bilgiyi tanımlar. Belgenin dili \texttt{lang="tr"} ile belirtilir. Masal listeleri ve paragraflar JavaScript tarafından ilgili alanlara eklenir. SVG çizimleri dosya içindeki \texttt{symbol}, \texttt{path}, \texttt{pattern} ve \texttt{use} öğeleriyle oluşturulur. Denetimlerde etiketler, görünür klavye odağı ve uygun ARIA bilgileri bulunur.
+
+\subsection{İçsel CSS}
+Stilleri \texttt{<style>} etiketi içinde tanımladım. \texttt{:root} değişkenleri renkleri, yazı ölçeğini ve boşlukları toplar. Grid sütunları, Flexbox düğme ve araç sıralarını düzenler. Aşağıdaki gerçek kod parçası, okuma bölümünde 300 px menü sütunu ve kalan alanı kullanan metin sütunu tanımlar.
+\begin{lstlisting}[float=htbp,caption={Okuma bölümünün sütun düzeni}]
+.okuma {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: var(--bosluk-6);
+  padding: var(--bosluk-6) var(--kenar) var(--bosluk-7);
+  background: var(--renk-kagit);
+}
+\end{lstlisting}
+\texttt{@media} kuralları dar ekranlarda sütunları birleştirir. \texttt{white-space: pre-line}, masal paragraflarındaki satır sonlarını görünür tutar. Tema seçimi, HTML öğesinin \texttt{data-tema} niteliği üzerinden renkleri değiştirir.
+
+\subsection{İçsel JavaScript}
+\texttt{MASALLAR} dizisindeki her nesnede kimlik, başlık, etiketler, kaynak ve paragraf listesi vardır. \texttt{durum} nesnesi açık masalı, aramayı, filtreyi ve okuma ayarlarını tutar. \texttt{masalAc()} seçilen metni, kaynağı ve gezinme düğmelerini günceller. \texttt{listeyiCiz()} ana listeyi; \texttt{rayiCiz()} kenar menüyü oluşturur. Arama, Türkçe küçük harf dönüşümüyle başlıkta ve paragraflarda yapılır.
+\begin{lstlisting}[float=htbp,caption={Metin öğesi oluşturan yardımcı fonksiyon}]
+function yeni(etiket, metin) {
+  const e = document.createElement(etiket);
+  if (metin !== undefined) e.textContent = metin;
+  return e;
+}
+\end{lstlisting}
+Bu fonksiyon yeni bir HTML öğesi üretir ve verilen metni \texttt{textContent} ile ekler. Arama vurgusunda \texttt{createTextNode} ve \texttt{mark} öğeleri kullanılır; masal metni HTML kodu olarak yorumlanmaz. Düğmelere \texttt{click}, aramaya \texttt{input}, sayfaya \texttt{scroll} ve \texttt{resize} dinleyicileri bağlanır.
+
+Ayarların saklanmasını ve geri yüklenmesini iki ayrı fonksiyonla düzenledim. Bu fonksiyonlar \texttt{localStorage} erişimini \texttt{try/catch} içinde gerçekleştirir. Saklama engellenirse sayfanın temel işlevleri devam edebilir. İlerleme hesabını masalın başında yüzde 0, metnin sonu ekranda göründüğünde yüzde 100 olacak şekilde güncelledim. Yazı boyutu veya satır aralığı değiştiğinde oran yeniden hesaplanır; \texttt{elmalariDoldur()} bu oranı üç elmanın dolgusuna dağıtır. Oran yüzde 98'e ulaştığında masal tamamlandı olarak kaydedilir. Bu gösterge gerçek okuma veya anlama düzeyini ölçmez; kaydırma konumunu temsil eder.
+
+Okuma yerini kaydetmek için her masalın kimliğiyle eşleşen paragraf sırasını ve paragraf içindeki göreli konumu sakladım. ``Yerimi kaydet'' düğmesi bu bilgiyi \texttt{localStorage}'a yazar; ``Kaldığım yere dön'' düğmesi kayıtlı konuma kaydırır. Kayıt kullanıcı tarafından yapılır ve aynı cihazdaki aynı tarayıcıda tutulur; cihazlar arasında eşitlenmez. Bu özellik, son açılan masalın ve tamamlanan masalların otomatik saklanmasından ayrıdır.
+
+\subsection{Sayfanın Özellikleri}
+\begin{itemize}
+\item On masal arasında seçim ve önceki/sonraki gezinme.
+\item Başlık ve metinde arama; açık metindeki eşleşmeleri vurgulama.
+\item Veriden üretilen 31 etiket; başlangıçta en sık kullanılan 10 etiketi gösterme.
+\item Yazı boyutu, satır aralığı ve üç tema seçeneği.
+\item Ayarları, son masalı ve tamamlanan masalları yerel olarak saklama.
+\item Her masal için okuma yerini kaydetme ve kayıtlı konuma geri dönme.
+\item Masaüstünde okuma menüsünü metinden bağımsız kaydırma.
+\item Üç elma ilerlemesi, masala göre motif değişimi ve mobil menü.
+\item Masal altında kaynak künyesi; sayfa içi bağlantılar ve başa dönme.
+\end{itemize}
+
+\section{Yapay Zekâ Kullanımı}
+Projeyi geliştirirken kod, SVG motifleri ve belge hazırlama süreçlerinde yapay zekâ araçlarından yararlandım. Masal seçkisini ve görsel yönü belirledim; üretilen arayüzü test ederek gerekli düzeltmeleri tarif ettim. SVG motiflerini de kod üretimi kapsamında yapay zekâ desteğiyle oluşturdum. Kullandığım araçları ve destek aldığım alanları aşağıda belirttim.
+\begin{longtable}{@{}p{2.3cm}p{3.5cm}p{4.4cm}p{3.5cm}@{}}
+\toprule\textbf{Araç} & \textbf{Ne için?} & \textbf{İstem özeti} & \textbf{Nerede?}\\\midrule\endhead
+Claude Code (Anthropic) & HTML, CSS, JavaScript, SVG ve proje belgeleri & On masalı tek dosyada sunan; çevrimdışı, arama ve okuma ayarları olan bir sayfa oluşturma. & Site yapısı, stiller, etkileşimler ve motifler.\\[6pt]
+ChatGPT & Hata düzeltme, özellik ekleme ve rapor düzenleme & Masal geçişini, menü kaydırmasını ve elma ilerlemesini düzeltme; okuma yeri kaydı ekleme; raporu güncelleme. & Gezinme, okuma menüsü, ilerleme göstergesi, yer imi ve rapor.\\
+\bottomrule
+\end{longtable}
+Motif istemlerinin ayrıntılarına depodaki \texttt{gorsel-promptlari/} klasöründe yer verdim. İstemlerde geometrik biçimler, sınırlı renkler ve masal içeriğiyle ilişkili simgeler üzerinde durdum. Çini yıldızını açılışta, kilim şeritlerini bölüm aralarında, üç elmayı üst çubukta, masal motiflerini liste bölümünde kullandım.
+
+\subsection{Anladığım ve Kendim Yaptığım Kısımlar}
+Masal seçkisini ve projenin görsel yönünü belirledim. Kod üretimi ve düzeltmelerinde yapay zekâ desteğinden yararlandım. HTML'in bölüm yapısını, CSS'in görünümü ve duyarlı düzeni, JavaScript'in ise masal seçimi ve okuma araçlarını yönettiğini proje üzerinde inceledim.
+
+Sayfayı bilgisayarda ve telefonda kullanarak test ettim. Önceki/sonraki masala geçildiğinde başlangıca dönülmemesini, masaüstünde sol panelin bağımsız kaydırılamamasını ve elmaların ilerlemeyi doğru göstermemesini fark ettim. Bu sorunları tarif ederek yapay zekâ desteğiyle düzelttim; ardından ilgili işlemleri yeniden deneyip çalıştıklarını kontrol ettim. Okuma yerini kaydetme ihtiyacını belirleyerek bu özelliği eklettim ve kayıtlı konuma dönüşü test ettim. Güncel HTML dosyasını GitHub'a yükledim ve yayımlanan sayfayı tekrar kontrol ettim.
+
+\section{Haftalık Katkılar}
+% ====================================================================
+Teams üzerinden paylaşılan ders içerikleri doğrultusunda tamamladığım telafi çalışmalarını ve ilgili görselleri aşağıda sundum.
+
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{1.7cm}%
+                    >{\raggedright\arraybackslash}p{6.4cm}%
+                    >{\centering\arraybackslash}p{6cm}@{}}
+\toprule
+\rowcolor{ana}\textcolor{white}{\textbf{Hafta}} & \textcolor{white}{\textbf{Yapılan çalışma}} & \textcolor{white}{\textbf{Görsel}} \\
+\midrule
+\endfirsthead
+\toprule
+\rowcolor{ana}\textcolor{white}{\textbf{Hafta}} & \textcolor{white}{\textbf{Yapılan çalışma}} & \textcolor{white}{\textbf{Görsel}} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+
+\textbf{1. hafta}\newline 16.09 &
+Telafi kapsamında, derste paylaşılan CERN ve World Wide Web örneğini inceledim. Hiper metnin belgeleri bağlantılarla ilişkilendiren yapısı ile hiper medyanın metne ek olarak görsel, video ve ses içerebilmesi üzerinde durdum.\newline \textbf{Commit:} \href{https://teams.microsoft.com/l/message/19:e74f27e293aa4b83bc2233b4170b1bbe@thread.tacv2/1790857108010?tenantId=afb14aed-4a54-433f-9753-519aa64a3e48\&groupId=7a5bb549-3faf-4a84-bb15-8be3b76924ba\&parentMessageId=1790797426260\&teamName=*26-27.86.GIT3168820.PROGRAMLAMAYA\%20G\%C4\%B0R\%C4\%B0\%C5\%9E\%20(A)\&channelName=Hafta\%201-2\%20Kat\%C4\%B1l\%C4\%B1m\%20Telafisi\&createdTime=1790857108010}{Teams telafi paylaşımı}\par\vspace{3pt}\small $\square$ Ders içinde katılım sergiledim\par $\boxtimes$ Telafi yaptım &
+\begin{minipage}[t]{\linewidth}\vspace{0pt}\haftagorsel{hafta1.png}\end{minipage} \\
+\midrule
+\textbf{2. hafta}\newline 23.09 &
+Telafi kapsamında, ders içeriğinde adı geçen API, Kotlin, Jamovi, Google Colab, Tag Manager ve SQL kavramlarını gözden geçirdim. HTML Online Viewer üzerinde World Wide Web örneğinin başlık, paragraf ve sayfa içi bağlantı yapısını çalıştım. Sayfanın alt bölümünü sık sorulan sorular, adres ve açıklama notuyla düzenledim.\newline \textbf{Commit:} \href{https://teams.microsoft.com/l/message/19:e74f27e293aa4b83bc2233b4170b1bbe@thread.tacv2/1790857108010?tenantId=afb14aed-4a54-433f-9753-519aa64a3e48\&groupId=7a5bb549-3faf-4a84-bb15-8be3b76924ba\&parentMessageId=1790797426260\&teamName=*26-27.86.GIT3168820.PROGRAMLAMAYA\%20G\%C4\%B0R\%C4\%B0\%C5\%9E\%20(A)\&channelName=Hafta\%201-2\%20Kat\%C4\%B1l\%C4\%B1m\%20Telafisi\&createdTime=1790857108010}{Teams telafi paylaşımı}\par\vspace{3pt}\small $\square$ Ders içinde katılım sergiledim\par $\boxtimes$ Telafi yaptım &
+\begin{minipage}[t]{\linewidth}\vspace{0pt}\haftagorsel{hafta2.png}\end{minipage} \\
+\midrule
+\textbf{3. hafta}\newline 30.09 &
+Telafi kapsamında üç ayrı uygulama hazırladım. Fotoğrafçılık konulu sayfada başlık, görsel ve içerik bağlantılarını CSS ile biçimlendirdim. OYNA, DURDUR ve İZLE düğmelerine tıklanınca uyarı mesajı gösteren JavaScript kodları yazdım. Bağlantılar ve JavaScript kullanarak bir sayfayı aynı ya da yeni sekmede açma işlemlerini uyguladım.\newline \textbf{Commit:} \href{https://teams.microsoft.com/l/message/19:76e81a64fe6448979da4ee91dd5a3fb4@thread.tacv2/1790794860425?tenantId=afb14aed-4a54-433f-9753-519aa64a3e48\&groupId=7a5bb549-3faf-4a84-bb15-8be3b76924ba\&parentMessageId=1790794860425\&teamName=*26-27.86.GIT3168820.PROGRAMLAMAYA\%20G\%C4\%B0R\%C4\%B0\%C5\%9E\%20(A)\&channelName=Kat\%C4\%B1l\%C4\%B1m\%20Telafi\%20Genel\&createdTime=1790794860425}{Teams telafi paylaşımı}\par\vspace{3pt}\small $\square$ Ders içinde katılım sergiledim\par $\boxtimes$ Telafi yaptım &
+\begin{minipage}[t]{\linewidth}\vspace{0pt}\haftagorsel{hafta3.png}\haftaek{hafta3b.png}\haftaek{hafta3c.png}\end{minipage} \\
+\midrule
+\textbf{4. hafta}\newline 07.10 &
+Telafi kapsamında, boş bırakıldığında uyarı veren ve girilen kullanıcı adına göre karşılama mesajı gösteren bir uygulama hazırladım. Bu uygulamanın ikinci sürümünde arka planı, düğmeyi ve mesaj alanını CSS ile biçimlendirdim. Ayrı bir çalışmada düğmelere tıklandığında ilgili yanıtları sayfada gösterdim. Bir diğer çalışmada değeri 15 artıran, 15 azaltan ve sıfırlayan bir sayaç oluşturdum.\newline \textbf{Commit:} \href{https://teams.microsoft.com/l/message/19:76e81a64fe6448979da4ee91dd5a3fb4@thread.tacv2/1791397351488?tenantId=afb14aed-4a54-433f-9753-519aa64a3e48\&groupId=7a5bb549-3faf-4a84-bb15-8be3b76924ba\&parentMessageId=1791361594974\&teamName=*26-27.86.GIT3168820.PROGRAMLAMAYA\%20G\%C4\%B0R\%C4\%B0\%C5\%9E\%20(A)\&channelName=Kat\%C4\%B1l\%C4\%B1m\%20Telafi\%20Genel\&createdTime=1791397351488}{Teams telafi paylaşımı}\par\vspace{3pt}\small $\square$ Ders içinde katılım sergiledim\par $\boxtimes$ Telafi yaptım &
+\begin{minipage}[t]{\linewidth}\vspace{0pt}\haftagorsel{hafta4.png}\haftaek{hafta4b.png}\haftaek{hafta4c.png}\haftaek{hafta4d.png}\end{minipage} \\
+\midrule
+\textbf{5. hafta}\newline 14.10 &
+Telafi kapsamında iki ayrı uygulama hazırladım. İlkinde, tıklanan kartın veri niteliğindeki rengi gösterme ve seçilen iki kartın renk değerlerini karşılaştırma mantığı üzerinde çalıştım. İkincisinde, Behance sitesine hem HTML bağlantısıyla hem de JavaScript ile düğmeye tıklayarak yönlendirme ekledim.\newline \textbf{Commit:} \href{https://teams.microsoft.com/l/message/19:76e81a64fe6448979da4ee91dd5a3fb4@thread.tacv2/1792004589167?tenantId=afb14aed-4a54-433f-9753-519aa64a3e48\&groupId=7a5bb549-3faf-4a84-bb15-8be3b76924ba\&parentMessageId=1791960451608\&teamName=*26-27.86.GIT3168820.PROGRAMLAMAYA\%20G\%C4\%B0R\%C4\%B0\%C5\%9E\%20(A)\&channelName=Kat\%C4\%B1l\%C4\%B1m\%20Telafi\%20Genel\&createdTime=1792004589167}{Teams telafi paylaşımı}\par\vspace{3pt}\small $\square$ Ders içinde katılım sergiledim\par $\boxtimes$ Telafi yaptım &
+\begin{minipage}[t]{\linewidth}\vspace{0pt}\haftagorsel{hafta5.png}\haftaek{hafta5b.png}\end{minipage} \\
+\midrule
+\textbf{6. hafta}\newline 21.10 &
+Telafi kapsamında, ders örnekleri üzerinden harici CSS ve JavaScript dosyalarının HTML ile ilişkilendirilmesini inceledim. Düğmeye tıklandığında koşula bağlı olarak kutunun rengini değiştiren örneği çalıştım. Verilen ödev için Avrupa Seyahat Rehberi sayfasını hazırladım. Sayfanın iki görünümünde gezinme menüsü, başlık alanı ve şehir kartlarının yerleşimini düzenledim.\newline \textbf{Commit:} \href{https://teams.microsoft.com/l/message/19:76e81a64fe6448979da4ee91dd5a3fb4@thread.tacv2/1792588538366?tenantId=afb14aed-4a54-433f-9753-519aa64a3e48\&groupId=7a5bb549-3faf-4a84-bb15-8be3b76924ba\&parentMessageId=1792565991141\&teamName=*26-27.86.GIT3168820.PROGRAMLAMAYA\%20G\%C4\%B0R\%C4\%B0\%C5\%9E\%20(A)\&channelName=Kat\%C4\%B1l\%C4\%B1m\%20Telafi\%20Genel\&createdTime=1792588538366}{Teams telafi paylaşımı}\par\vspace{3pt}\small $\square$ Ders içinde katılım sergiledim\par $\boxtimes$ Telafi yaptım &
+\begin{minipage}[t]{\linewidth}\vspace{0pt}\haftagorsel{hafta6.png}\haftaek{hafta6b.png}\haftaek{hafta6c.png}\haftaek{hafta6d.png}\end{minipage} \\
+\midrule
+\textbf{7. hafta}\newline [tarih] &
+[Bu hafta yaptığınız çalışma.]\newline \textbf{Commit:} [mesaj veya bağlantı]\katilimkutulari &
+\haftagorsel{hafta7.png}\haftaek{hafta7b.png} \\
+\midrule
+\textbf{8. hafta}\newline [tarih] &
+[Bu hafta yaptığınız çalışma.]\newline \textbf{Commit:} [mesaj veya bağlantı]\katilimkutulari &
+\haftagorsel{hafta8.png}\haftaek{hafta8b.png} \\
+\end{longtable}
+
+% ====================================================================
+
+\clearpage
+\section{Test ve Değerlendirme}
+Sayfanın genel kullanım testlerini bilgisayarda ve telefonda tamamladım. Google Chrome ve Safari tarayıcılarında sitenin çalıştığını kontrol ettim. HTML dosyasını internet bağlantısı olmadan açarak masal içeriklerinin ve sayfa içi işlevlerin kullanılabildiğini doğruladım. Aşağıdaki tabloda tamamladığım kontrolleri özetledim.
+
+\begingroup\small\setstretch{1.15}
+\begin{longtable}{@{}>{\raggedright\arraybackslash}p{5.3cm}>{\raggedright\arraybackslash}p{4.2cm}>{\raggedright\arraybackslash}p{4.2cm}@{}}
+\toprule\textbf{Özellik} & \textbf{Bilgisayar} & \textbf{Telefon}\\\midrule\endhead
+Masal listesi ve seçim & Test ettim; çalışıyor. & Test ettim; çalışıyor.\\[5pt]
+Önceki/sonraki masala geçiş & Yeni masalın başına dönüyor. & Yeni masalın başına dönüyor.\\[5pt]
+Arama ve etiket filtresi & Genel testlerde sorun gözlemlemedim. & Genel testlerde sorun gözlemlemedim.\\[5pt]
+Yazı boyutu, aralık ve tema & Görünüm güncelleniyor. & Görünüm güncelleniyor.\\[5pt]
+Ayarların saklanması & Test ettim; çalışıyor. & Test ettim; çalışıyor.\\[5pt]
+Okuma yeri kaydı ve geri dönüş & Test ettim; kayıtlı konuma dönüyor. & Genel kullanım testini tamamladım.\\[5pt]
+Üç elma ilerlemesi & Düzeltilen sürümü test ettim; çalışıyor. & Genel kullanım testini tamamladım.\\[5pt]
+Okuma menüsünün kullanımı & Sol paneli bağımsız kaydırabiliyorum. & Mobil menü sorunsuz çalışıyor.\\[5pt]
+Duyarlı düzen ve taşma & Testlerimde sorun gözlemlemedim. & Testlerimde sorun gözlemlemedim.\\
+\bottomrule
+\end{longtable}
+\endgroup
+
+\textbf{Çevrimdışı kullanım:} İnternet bağlantısını kapatarak HTML dosyasını açtım ve sayfanın çalıştığını doğruladım.
+
+\textbf{Denenen tarayıcılar:} Google Chrome ve Safari. Siteyi her iki tarayıcıda da test ettim; kullanım kontrollerimde sorun gözlemlemedim.
+
+Testlerde belirlediğim üç sorunu yapay zekâ desteğiyle giderdim: masal geçişlerinde başlangıca dönmeyi sağladım, masaüstündeki sol panele bağımsız kaydırma ekledim ve elmaların ilerleme hesabını düzelttim. Her değişiklikten sonra ilgili davranışı yeniden test ettim. Son sürümü GitHub Pages üzerinde de kontrol ettim.
+
+\textbf{Kullanım sınırları:} Okuma ilerlemesi kaydırma konumunu temsil eder; metnin gerçekten okunup anlaşıldığını ölçmez. Okuma yeri kaydı aynı cihaz ve tarayıcıda tutulur; cihazlar arasında aktarılmaz. Tarayıcı verileri silinirse kayıtlar kaybolabilir. Masal içeriğinin gösterilmesi JavaScript'e bağlıdır. Çevrimdışı kullanım sayfanın kendi içeriği ve işlevleri içindir; dış kaynak bağlantılarını açmak internet gerektirir. Genel kullanım testlerini tamamladım; kapsamlı bir erişilebilirlik denetimi gerçekleştirmedim.
+
+\clearpage
+\section{Sunum Videosu}
+% ====================================================================
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\textbf{Video süresi:} & 16:28 \\
+\textbf{Görünürlük:} & Liste dışı (Listelenmemiş) \\
+\textbf{Bağlantı:} & \youtubelink \\
+\end{tabular}
+\end{center}
+
+\subsection{Video Kontrol Listesi}
+\aciklama{Teslimden önce hepsini kontrol edin ve kutuları $\boxtimes$ ile işaretleyin.}
+\begin{itemize}[label={}]
+  \item $\boxtimes$ Süre 12--18 dakika aralığında.
+  \item $\boxtimes$ Sunum boyunca kameram açık, yüzüm görünüyor.
+  \item $\boxtimes$ Görünürlük \textbf{Listelenmemiş} (ya da Herkese açık); \textbf{Özel} değil.
+  \item $\boxtimes$ Bağlantıyı gizli pencerede açtım, video oynuyor.
+  \item $\boxtimes$ YouTube videoyu işlemeyi bitirdi.
+  \item $\boxtimes$ Videoyu baştan sona izledim; ses ve kamera tüm sunumda var.
+  \item $\boxtimes$ Kapaktaki bağlantı ile bu bölümdeki bağlantı aynı.
+\end{itemize}
+
+% ====================================================================
+
+\section{Sonuç ve Kendi Değerlendirmem}
+Bu projede on Türk masalını tek HTML dosyasında sunan bir okuma arayüzü hazırladım. Masal temasını renkler ve SVG motiflerinin yanında üç elma ilerleme göstergesiyle de işlevsel olarak kullandım. Arama, etiket filtreleri ve okuma ayarlarıyla farklı kullanım tercihlerine yer verdim; okuma yeri kaydıyla kullanıcının ara verdiği konuma dönebilmesini sağladım.
+
+Geliştirme sürecinde en çok masal geçişlerindeki kaydırma davranışı, sol panelin kullanımı ve ilerleme hesabı üzerinde çalıştım. Testlerde karşılaştığım sorunları tanımlayıp yapay zekâ desteğiyle düzelttim ve sonuçları yeniden kontrol ettim. Bu süreçte bir özelliğin kodda bulunmasının yeterli olmadığını, gerçek kullanımda ve farklı ekranlarda denenmesi gerektiğini gördüm. Google Chrome, Safari, telefon ve çevrimdışı kullanım testlerini tamamladım. İleride tüm masallar için toplu bir ilerleme özeti ve JavaScript kapalıyken de okunabilen içerik sunmayı değerlendirebilirim.
+
+\clearpage
+\section{Kaynakça}
+Kaynak künyelerini sitedeki bilgiler ve depodaki kaynak kayıtları temelinde düzenledim. Depodaki kayıtlarda belirtilen erişim tarihi 29 Ekim 2026'dır. Metnin alındığı çevrim içi adreslerle belirtilen resmî kaynakları ayrı ayrı gösterdim; aynı adlı farklı sürümlerin birebir eşleştiğini varsaymadım.
+\begin{thebibliography}{11}
+\bibitem{k1} \textbf{Keloğlan ve Altın Bülbül}. Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), "Keloğlan ve Altın Bülbül Masalı", derleyen Osman Saygı, Türk Folklor Araştırmaları Dergisi, 1969, sayı 240. Resmî sayfa: \url{https://www.kulturportali.gov.tr/portal/keloglanvealtinbulbulmasali}. Metnin alındığı ayna: masaloku.com, \url{https://www.masaloku.com/keloglan-ve-altin-bulbul.htm} (yayın 2 Aralık 2014; erişim 29 Ekim 2026)
+
+
+\bibitem{k2} \textbf{Hüsnü Yusuf}. Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), "Hüsnü Yusuf", derleyen Veysel Arseven, Türk Folklor Araştırmaları Dergisi, 1964, sayı 178. Resmî sayfa: \url{https://www.kulturportali.gov.tr/portal/husnuyusuf}. Metnin alındığı ayna: Okuryazar, "Hüsnü Yusuf Masalı", \url{https://www.okuryazar.com.tr/dergi/husnu-yusuf} (erişim 29 Ekim 2026)
+
+\bibitem{k3} \textbf{İncili Çadır}. Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), "İncili Çadır", derleyen Veysel Arseven. Resmî sayfa: \url{https://www.kulturportali.gov.tr/portal/incilicadir}
+
+\bibitem{k4} \textbf{Mitişik Kız}. Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), "Mitişik Kız", derleyen Veysel Arseven. Resmî sayfa: \url{https://www.kulturportali.gov.tr/portal/mitisikkiz}
+
+\bibitem{k5} \textbf{Keloğlan ile Yılan, Köpek, Kedi ve Balık}. Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), "Keloğlan İle Yılan, Köpek, Kedi ve Balık", derleyen Dr. Saim Sakaoğlu, Türk Folklor Araştırmaları Dergisi, 1975, sayı 312. Resmî sayfa: \url{https://www.kulturportali.gov.tr/portal/keloglanileyilankopekkedivebalik}. Metnin alındığı ayna: masaloku.org, \url{https://masaloku.org/keloglan-ile-yilan-kopek-kedi-ve-balik} (erişim 29 Ekim 2026)
+
+\bibitem{k6} \textbf{Öksüz Kız}. Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), "Öksüz Kız", kaynak dipnotu: Umay Günay, \emph{Elazığ Masalları}, Erzurum: Atatürk Üniversitesi Yayınları, 1975. Resmî sayfa: \url{https://www.kulturportali.gov.tr/portal/oksuzkiz}. Metnin alındığı ayna: Sabah, "MASAL OKU – Çocuklar İçin En Güzel… Masal, Öykü ve Hikaye Oku" (7 Aralık 2023), \url{https://www.sabah.com.tr/yasam/masal-oku-en-guzel-kisa-uzun-masal-oyku-ve-hikye-oku-masallar-oykuler-ve-hikyeler-dinle-5359191} (erişim 29 Ekim 2026)
+
+\bibitem{k7} \textbf{Korkak Adam ve Devler}. Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), "Korkak Adam ve Devler", derleyen Salim Dalkıran, Türk Folklor Araştırmaları Dergisi, 1960, sayı 130. Resmî sayfa: \url{https://www.kulturportali.gov.tr/portal/korkakadamvedevler}. Metnin alındığı ayna: Sabah, "MASAL OKU – Çocuklar İçin En Güzel… Masal, Öykü ve Hikaye Oku" (7 Aralık 2023), \url{https://www.sabah.com.tr/yasam/masal-oku-en-guzel-kisa-uzun-masal-oyku-ve-hikye-oku-masallar-oykuler-ve-hikyeler-dinle-5359191} (erişim 29 Ekim 2026)
+
+\bibitem{k8} \textbf{Kırkıncı Oda}. Naki Tezel, \emph{Türk Masalları} (ilk baskı Millî Eğitim Basımevi, 1971; ayrıca Kültür Bakanlığı Yayınları, 1990 ve Alfa Basım Dağıtım, 2019). Çevrim içi tam metin: Muzip Masal Cini, "Kırkıncı Oda-Naki Tezel (Türk Masalları)", \url{https://muzipmasalcini.com/kirkinci-oda-naki-tezel-turk-masallari/} (yayın 3 Mart 2025). KTB e-Kitap'ta da bir "Kırkıncı Oda" PDF'i var: \url{https://ekitap.ktb.gov.tr/Eklenti/10771,kirkinciodapdf.pdf?0}
+
+\bibitem{k9} \textbf{Üç Turunçlar}. Kurşunkalem (kursunkalem.com), "Üç Turunçlar Masalı", derleyen Nebahat Çetin, yayın 14 Eylül 2016, \url{http://www.kursunkalem.com/uc-turunclar-masali/} (erişim 29 Ekim 2026). Aynı adlı bir metin KTB e-Kitap "Masallar" dizisinde de var (\url{https://ekitap.ktb.gov.tr/Eklenti/10795,ucturunclarpdf.pdf?0}), ancak ikisinin aynı metin olduğu doğrulanamadı.
+
+\bibitem{k10} \textbf{Üç Oğlan}. Türkiye Kültür Portalı (T.C. Kültür ve Turizm Bakanlığı), "Üç Oğlan", derleyen Numan Kartal, Türk Folklor Araştırmaları Dergisi, 1965, sayı 199. Resmî sayfa: \url{https://www.kulturportali.gov.tr/portal/ucoglan}. Metnin alındığı ayna: Okuryazar, "Üç Oğlan Masalı", \url{https://www.okuryazar.com.tr/dergi/uc-oglan} (erişim 29 Ekim 2026)
+
+\bibitem{proje} Oya Meriç Alpay. \emph{Türk Masalları Derlemesi}, proje deposu. \url{https://github.com/OyaMeric/turk-masallari}. İncelenen dosyalar: \texttt{index.html}, \texttt{README.md}, \texttt{kaynaklar.md}, \texttt{tasarim-notlari.md}, \texttt{kod-haritasi.md}, \texttt{yz-kullanimi.md} ve motif yönergeleri. İnceleme: 1 Kasım 2026.
+\end{thebibliography}
+\appendix
+\clearpage
+\section{Teslim Kontrol Listesi}
+% ====================================================================
+Teslim kontrol listesindeki maddeleri kontrol ettim.
+\begin{itemize}[label={}]
+  \item $\boxtimes$ MEBİS'e \textbf{yalnızca bu raporun PDF'ini} yükleyeceğim. ZIP ve HTML dosyası yüklemeyeceğim.
+  \item $\boxtimes$ PDF dosya adını \texttt{86230035\_OyaMericAlpay\_vize.pdf} olarak düzenledim.
+  \item $\boxtimes$ Kapaktaki GitHub ve YouTube bağlantıları doğru; PDF'te tıklayıp denedim.
+  \item $\boxtimes$ GitHub deposunda web sayfası (tek \texttt{.html}), rapor PDF'i, \texttt{.tex} kaynakları ve \texttt{README.md} var.
+  \item $\boxtimes$ GitHub deposu \textbf{herkese açık} (ya da öğretim üyesine erişim verdim).
+  \item $\boxtimes$ Çalışmamın son hâli teslim saatinden \textbf{önce} depoya gönderildi (sonraki commitler değerlendirilmez).
+  \item $\boxtimes$ Sayfa içsel CSS ve içsel JavaScript kullanıyor, harici dosya gerektirmiyor.
+  \item $\boxtimes$ Hazır taslak kullanmadım; yapay zekâ kullandıysam Bölüm 5'i doldurdum.
+  \item $\boxtimes$ Çalışmanın mantığını sunumda anlatabilirim.
+\end{itemize}
+
+\end{document}
