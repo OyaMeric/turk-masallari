@@ -1,0 +1,710 @@
+/* ===========================================================================
+   1. DEĞİŞKENLER
+   Bütün renkler, boşluklar ve yazı boyutları burada tanımlı. Sayfanın hiçbir
+   yerinde doğrudan renk kodu yazılmaz; her zaman bu değişkenler kullanılır.
+   =========================================================================== */
+:root {
+  /* Renkler — kilim, çini ve tezhipten alındı */
+  --renk-zemin:   #f3ead9;  /* parşömen: okuma kolonunun zemini */
+  --renk-kagit:   #faf4e8;  /* bir ton açık kâğıt: öne çıkan yüzeyler */
+  --renk-metin:   #2a1f17;  /* koyu kahve: bütün gövde metni */
+  --renk-soluk:   #6b5a48;  /* ikincil notlar, kaynak künyesi */
+  --renk-saha:    #163a5f;  /* çini mavisi: sabit yarının alanı */
+  --renk-saha-ust:#1e4a76;  /* çini mavisinin bir ton açığı */
+  --renk-vurgu:   #8e2b2b;  /* bordo: tek eylem düğmesi ve bağlantılar */
+  --renk-hardal:  #8a5f14;  /* hardal: etiketler ve motif detayı */
+  --renk-secim:   #e4d4b4;  /* arama vurgusu ve metin seçimi */
+
+  /* Bir rengin ÜZERİNE gelen yazı için ayrı değişkenler.
+     Tema değişince zemin de yazı da birlikte değişsin diye. */
+  --renk-vurgu-yazi:  #ffffff;  /* bordo düğmenin üstündeki yazı */
+  --renk-vurgu-hover: #a33232;  /* bordo düğmenin üzerine gelince */
+  --renk-saha-yazi:   #f3ead9;  /* çini alanının üstündeki yazı ve motifler */
+
+  /* Boşluk ölçeği — hepsi 8px'in katları */
+  --bosluk-1: 8px;
+  --bosluk-2: 16px;
+  --bosluk-3: 24px;
+  --bosluk-4: 40px;
+  --bosluk-5: 64px;
+  --bosluk-6: 96px;
+  --bosluk-7: 144px;   /* bölümler arası boşluk */
+
+  /* Tek yazı tipi: sistemde hazır bulunan serif yığını.
+     Harici font yüklenmediği için yalnızca kurulu yazı tipleri kullanılır. */
+  --yazi: Georgia, "Palatino Linotype", "Book Antiqua", "Times New Roman", serif;
+
+  /* Altı yazı boyutu adımı, fazlası yok. Sayfada başka boyut kullanılmaz. */
+  --tip-kucuk:  clamp(0.875rem, 0.85rem + 0.1vw, 0.9375rem);  /* etiket, künye  */
+  --tip-orta:   clamp(1rem, 0.95rem + 0.2vw, 1.0625rem);      /* düğme, arayüz  */
+  --tip-govde:  20px;                                         /* masal metni, JS ile değişir */
+  --tip-ara:    clamp(1.375rem, 1.25rem + 0.5vw, 1.625rem);
+  --tip-baslik: clamp(2rem, 1.5rem + 1.8vw, 2.75rem);
+  --tip-dev:    clamp(2.375rem, 1.9rem + 1.9vw, 3.25rem);
+
+  /* Okuma ayarları — JS bunları değiştirir */
+  --metin-aralik: 1.7;    /* satır aralığı */
+  --metin-olcu:   66ch;   /* metin sütunu genişliği: 60–75 karakter arası */
+
+  /* Sayfanın tek köşe yarıçapı ve tek kenar boşluğu */
+  --kose: 0px;            /* köşeler keskin: kitap sayfası hissi */
+  --kenar: clamp(16px, 3vw, 32px);
+  --gecis: 240ms ease;
+}
+
+/* --- Sepya okuma modu --- */
+html[data-tema="sepya"] {
+  --renk-zemin: #e9d9b8;
+  --renk-kagit: #f1e4c8;
+  --renk-metin: #30220f;
+  --renk-soluk: #6a5631;
+  --renk-secim: #d8c08c;
+  --renk-hardal: #6d4a0e;   /* sepya zemin daha koyu, hardal da koyulaşmalı */
+}
+
+/* --- Koyu okuma modu --- */
+html[data-tema="koyu"] {
+  --renk-zemin:   #16120d;
+  --renk-kagit:   #201a13;
+  --renk-metin:   #ede1cb;
+  --renk-soluk:   #b3a28a;
+  --renk-saha:    #0f2840;
+  --renk-saha-ust:#163a5f;
+  --renk-vurgu:   #e0938f;
+  --renk-hardal:  #d8ab52;
+  --renk-secim:   #4a3a20;
+  /* Koyu temada vurgu rengi açık; üzerine gelen yazı da koyu olmalı */
+  --renk-vurgu-yazi:  #16120d;
+  --renk-vurgu-hover: #efb3af;
+}
+
+/* ===========================================================================
+   2. SIFIRLAMA VE TEMEL
+   =========================================================================== */
+* { box-sizing: border-box; }
+
+/* Düğme ve giriş alanları tarayıcıdan gelen kendi yazı tipini kullanır.
+   Sayfadaki tek yazı tipini devralsınlar diye bu kural gerekli. */
+button, input, select, textarea { font-family: inherit; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--renk-zemin);
+  color: var(--renk-metin);
+  font-family: var(--yazi);
+  font-size: var(--tip-govde);
+  line-height: var(--metin-aralik);
+  -webkit-text-size-adjust: 100%;
+}
+
+h1, h2, h3 {
+  font-weight: 400;              /* başlıklar kalın değil, büyük */
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0;
+  text-wrap: balance;
+}
+
+p { margin: 0 0 1em; }
+
+a {
+  color: var(--renk-vurgu);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
+::selection { background: var(--renk-secim); color: var(--renk-metin); }
+
+/* Klavyeyle gezen için görünür odak halkası */
+:focus-visible {
+  outline: 3px solid var(--renk-vurgu);
+  outline-offset: 2px;
+}
+
+/* Ekran okuyucuya görünür, ekranda görünmez metin.
+   Buradaki 1px bir ayırıcı çizgi değil, öğeyi ekrandan gizleme yöntemi. */
+.gizli-metin {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+/* İçeriğe atla bağlantısı: sekme tuşuna basınca görünür */
+.atla {
+  position: absolute;
+  left: var(--bosluk-2);
+  top: -100px;
+  z-index: 50;
+  background: var(--renk-vurgu);
+  color: var(--renk-vurgu-yazi);
+  padding: var(--bosluk-1) var(--bosluk-2);
+  font-size: var(--tip-kucuk);
+  text-decoration: none;
+  transition: top var(--gecis);
+}
+.atla:focus { top: var(--bosluk-2); }
+
+/* ===========================================================================
+   3. ÜST ÇUBUK — marka, üç elma ilerlemesi, gezinme
+   =========================================================================== */
+.ust {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--bosluk-2);
+  padding: var(--bosluk-1) var(--kenar);
+  background: var(--renk-zemin);
+  font-size: var(--tip-kucuk);
+}
+
+.marka {
+  font-size: var(--tip-orta);
+  letter-spacing: -0.01em;
+}
+
+/* --- Üç elma: sayfanın okuma ilerlemesi --- */
+.elmalar {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: var(--bosluk-1);
+}
+.elmalar svg { display: block; width: 84px; height: 30px; }
+.elma-cizgi { fill: none; stroke: var(--renk-soluk); stroke-width: 1.6; }
+.elma-dolu  { fill: var(--renk-vurgu); stroke: none; }
+.elmalar-yazi { color: var(--renk-soluk); font-variant-numeric: tabular-nums; }
+
+.ust-gezinme {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: var(--bosluk-3);
+}
+.ust-gezinme a { color: var(--renk-metin); text-decoration: none; }
+.ust-gezinme a:hover { text-decoration: underline; }
+
+/* ===========================================================================
+   4. AÇILIŞ — ikiye bölünmüş sahne
+   Sol yarı parşömen bir sayfa, sağ yarı yerinde duran çini mavisi alan.
+   =========================================================================== */
+.acilis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  min-height: calc(100svh - 48px);
+}
+
+.acilis-sayfa {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--bosluk-6) var(--kenar) var(--bosluk-7) var(--kenar);
+  max-width: 34rem;
+  margin-left: auto;
+  margin-right: var(--bosluk-5);
+}
+
+.acilis-sayfa h1 {
+  font-size: var(--tip-dev);
+  max-width: 21ch;             /* başlık en çok iki satır olsun */
+  margin-bottom: var(--bosluk-3);
+}
+
+.giris {
+  font-size: var(--tip-ara);
+  line-height: 1.4;
+  max-width: 34ch;
+  margin-bottom: var(--bosluk-4);
+}
+
+/* Sayfanın tek eylem düğmesi */
+.eylem {
+  align-self: flex-start;
+  display: inline-block;
+  background: var(--renk-vurgu);
+  color: var(--renk-vurgu-yazi);
+  font-size: var(--tip-orta);
+  padding: 18px 32px;
+  border: 0;
+  border-radius: var(--kose);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--gecis), background var(--gecis);
+}
+.eylem:hover { background: var(--renk-vurgu-hover); }
+.eylem:active { transform: translateY(1px); }
+
+/* --- Sağ yarı: yerinde duran çini alan --- */
+.acilis-saha {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100svh;
+  background: var(--renk-saha);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+.acilis-saha .cini-yildiz {
+  width: min(62%, 420px);
+  height: auto;
+  color: var(--renk-saha-yazi);
+  opacity: 0.92;
+}
+.saha-serit {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  justify-content: space-between;
+  gap: var(--bosluk-2);
+  padding: var(--bosluk-2) var(--bosluk-4);
+  background: var(--renk-kagit);
+  color: var(--renk-metin);
+  font-size: var(--tip-kucuk);
+}
+
+/* ===========================================================================
+   5. KİLİM ŞERİDİ — bölümleri ayıran tek süs
+   =========================================================================== */
+.kilim {
+  display: block;
+  width: 100%;
+  height: 34px;
+  color: var(--renk-saha);
+}
+
+/* ===========================================================================
+   6. MASALLAR BÖLÜMÜ — bölünmeyi kırar, tam genişlikte akar
+   =========================================================================== */
+.masallar {
+  padding: var(--bosluk-6) var(--kenar) var(--bosluk-7);
+}
+.bolum-baslik {
+  font-size: var(--tip-baslik);
+  margin-bottom: var(--bosluk-4);
+}
+
+/* --- Arama ve etiket süzgeci --- */
+.araclar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bosluk-2) var(--bosluk-3);
+  margin-bottom: var(--bosluk-4);
+}
+.arama-kutu {
+  display: flex;
+  align-items: baseline;
+  gap: var(--bosluk-2);
+}
+.arama-kutu label { font-size: var(--tip-kucuk); color: var(--renk-soluk); }
+#arama {
+  font-size: var(--tip-orta);
+  padding: 12px 14px;
+  width: 20rem;
+  max-width: 100%;
+  color: var(--renk-metin);
+  background: var(--renk-kagit);
+  border: 2px solid var(--renk-metin);
+  border-radius: var(--kose);
+}
+.sonuc-sayisi { font-size: var(--tip-kucuk); color: var(--renk-soluk); }
+
+.etiketler { display: flex; flex-wrap: wrap; gap: var(--bosluk-1); }
+.etiket-dugme {
+  font-size: var(--tip-kucuk);
+  padding: 8px 14px;
+  color: var(--renk-metin);
+  background: transparent;
+  border: 2px solid var(--renk-soluk);
+  border-radius: var(--kose);
+  cursor: pointer;
+  transition: background var(--gecis), color var(--gecis), border-color var(--gecis);
+}
+.etiket-dugme:hover { border-color: var(--renk-metin); }
+.etiket-dugme[aria-pressed="true"] {
+  background: var(--renk-saha);
+  border-color: var(--renk-saha);
+  color: var(--renk-saha-yazi);
+}
+/* "N etiket daha" düğmesi: süzgeç değil, liste açıcı — çerçevesiz dursun */
+.etiket-daha {
+  border-color: transparent;
+  color: var(--renk-vurgu);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.etiket-daha:hover { border-color: transparent; color: var(--renk-metin); }
+
+/* --- Liste gövdesi: solda yerinde duran motif, sağda masal listesi --- */
+.masallar-govde {
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  gap: var(--bosluk-6);
+  align-items: start;
+}
+.motif-alan {
+  position: sticky;
+  top: 12vh;
+  aspect-ratio: 4 / 5;
+  background: var(--renk-saha);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.motif-alan svg {
+  width: 66%;
+  height: auto;
+  color: var(--renk-saha-yazi);
+}
+/* On motif üst üste durur, yalnızca açık olan görünür.
+   Böylece masal değişince motif yavaşça karşı motife geçer. */
+.motif { opacity: 0; transition: opacity 420ms ease; }
+.motif.acik { opacity: 1; }
+.motif-alt {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: var(--bosluk-2) var(--bosluk-3);
+  background: var(--renk-kagit);
+  color: var(--renk-metin);
+  font-size: var(--tip-kucuk);
+}
+
+.masal-listesi { list-style: none; margin: 0; padding: 0; }
+.masal-satir { border: 0; }
+.masal-dugme {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--kose);
+  padding: var(--bosluk-2) var(--bosluk-2) var(--bosluk-2) 0;
+  color: var(--renk-metin);
+  font-size: var(--tip-ara);
+  line-height: 1.2;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: var(--bosluk-2);
+  transition: background var(--gecis);
+}
+.masal-dugme:hover { background: var(--renk-kagit); }
+.masal-dugme[aria-current="true"] { font-weight: 700; }
+.masal-dugme .satir-etiket {
+  font-size: var(--tip-kucuk);
+  color: var(--renk-hardal);
+  text-align: right;
+}
+/* Okunmuş masalın yanındaki dolu elma işareti */
+.okundu-isaret { width: 13px; height: 15px; vertical-align: -2px; margin-right: 6px; fill: var(--renk-vurgu); }
+
+/* Seçili satırın altında açılan kısa tanıtım */
+.satir-ozet {
+  margin: 0 0 var(--bosluk-2);
+  padding-right: var(--bosluk-3);
+  max-width: 40ch;
+  font-size: var(--tip-orta);
+  line-height: 1.5;
+  color: var(--renk-soluk);
+}
+
+/* ===========================================================================
+   7. OKUMA BÖLÜMÜ — solda yerinde duran ray, sağda okuma kolonu
+   =========================================================================== */
+.okuma {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: var(--bosluk-6);
+  padding: var(--bosluk-6) var(--kenar) var(--bosluk-7);
+  background: var(--renk-kagit);
+}
+
+.ray {
+  position: sticky;
+  top: 72px;
+  align-self: start;
+}
+/* Masaüstünde uzun kenar menü, masal metninden bağımsız kaydırılır. */
+@media (min-width: 961px) {
+  .ray {
+    max-height: calc(100vh - 88px);
+    max-height: calc(100dvh - 88px);
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    padding-right: var(--bosluk-1);
+  }
+}
+
+.ray h2 { font-size: var(--tip-baslik); margin-bottom: var(--bosluk-3); }
+
+.ray-liste { list-style: none; margin: 0 0 var(--bosluk-5); padding: 0; }
+.ray-liste button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  padding: 7px 0;
+  color: var(--renk-metin);
+  font-size: var(--tip-orta);
+  line-height: 1.35;
+  cursor: pointer;
+}
+.ray-liste button:hover { color: var(--renk-vurgu); }
+.ray-liste button[aria-current="true"] { font-weight: 700; color: var(--renk-vurgu); }
+
+/* --- Okuma ayarları --- */
+.ayar-grup { margin-bottom: var(--bosluk-3); }
+.ayar-baslik {
+  display: block;
+  font-size: var(--tip-kucuk);
+  color: var(--renk-soluk);
+  margin-bottom: var(--bosluk-1);
+}
+.ayar-sira { display: flex; gap: var(--bosluk-1); flex-wrap: wrap; }
+.ayar-dugme {
+  font-size: var(--tip-kucuk);
+  min-width: 42px;
+  padding: 9px 12px;
+  color: var(--renk-metin);
+  background: transparent;
+  border: 2px solid var(--renk-soluk);
+  border-radius: var(--kose);
+  cursor: pointer;
+  transition: background var(--gecis), color var(--gecis), border-color var(--gecis);
+}
+.ayar-dugme:hover:not([disabled]) { border-color: var(--renk-metin); }
+.ayar-dugme[disabled] { opacity: 0.4; cursor: default; }
+.ayar-dugme[aria-pressed="true"] {
+  background: var(--renk-metin);
+  border-color: var(--renk-metin);
+  color: var(--renk-zemin);
+}
+.ayar-olcu { font-size: var(--tip-kucuk); color: var(--renk-soluk); align-self: center; }
+
+/* Okuma sırasında erişilebilir kalan, masala özel yer imi denetimleri. */
+.yer-cubugu {
+  position: sticky;
+  top: var(--yer-cubugu-ust, 80px);
+  z-index: 20;
+  background: var(--renk-kagit);
+  padding: var(--bosluk-1) 0;
+  margin-bottom: var(--bosluk-3);
+}
+.yer-dugmeleri { display: flex; flex-wrap: wrap; gap: var(--bosluk-1); }
+.yer-durumu {
+  display: block;
+  margin-top: 4px;
+  color: var(--renk-soluk);
+  font-size: var(--tip-kucuk);
+  line-height: 1.4;
+}
+
+/* --- Masal metni --- */
+.masal {
+  max-width: var(--metin-olcu);
+}
+.masal-ust { margin-bottom: var(--bosluk-4); }
+.masal h2 { font-size: var(--tip-baslik); margin-bottom: var(--bosluk-2); }
+.masal-etiket-sira {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bosluk-1) var(--bosluk-2);
+  font-size: var(--tip-kucuk);
+  color: var(--renk-hardal);
+}
+.masal-metin > p {
+  font-size: var(--tip-govde);
+  line-height: var(--metin-aralik);
+  margin-bottom: 1.15em;
+  /* Kaynaktaki satır sonları korunur: masallardaki karşılıklı konuşmalar
+     alt alta satırlar hâlinde yazılmış, öyle de okunmalı. */
+  white-space: pre-line;
+}
+.masal-metin mark {
+  background: var(--renk-secim);
+  color: var(--renk-metin);
+  padding: 0 2px;
+}
+.metin-yok {
+  font-size: var(--tip-orta);
+  color: var(--renk-vurgu);
+}
+.kaynak-kunye {
+  margin-top: var(--bosluk-4);
+  padding-top: var(--bosluk-2);
+  font-size: var(--tip-kucuk);
+  line-height: 1.5;
+  color: var(--renk-soluk);
+  /* Kaynak künyeleri uzun bağlantı adresleri içeriyor. Bölünmezlerse
+     telefonda sütunu genişletip yatay kaydırmaya yol açıyorlar. */
+  overflow-wrap: anywhere;
+}
+.masal-metin > p { overflow-wrap: break-word; }
+
+/* Önceki / sonraki masal */
+.gezinme {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--bosluk-2);
+  max-width: var(--metin-olcu);
+  margin-top: var(--bosluk-5);
+}
+.gezinme button {
+  min-height: 72px;
+  padding: var(--bosluk-2);
+  text-align: left;
+  background: var(--renk-zemin);
+  color: var(--renk-metin);
+  border: 0;
+  border-radius: var(--kose);
+  font-size: var(--tip-orta);
+  line-height: 1.35;
+  cursor: pointer;
+  transition: background var(--gecis);
+}
+.gezinme button:hover:not([disabled]) { background: var(--renk-secim); }
+.gezinme button[disabled] { opacity: 0.45; cursor: default; }
+.gezinme .yon {
+  display: block;
+  font-size: var(--tip-kucuk);
+  color: var(--renk-soluk);
+  margin-bottom: 4px;
+}
+
+/* ===========================================================================
+   8. DERLEME NOTU — ortada duran bir mektup
+   =========================================================================== */
+.derleme {
+  padding: var(--bosluk-7) var(--kenar);
+}
+.mektup {
+  max-width: 34rem;
+  margin: 0 auto;
+}
+.mektup h2 { font-size: var(--tip-baslik); margin-bottom: var(--bosluk-4); }
+.mektup p { font-size: var(--tip-orta); line-height: 1.6; }
+.imza {
+  margin-top: var(--bosluk-3);
+  font-style: italic;
+  font-size: var(--tip-ara);
+}
+.imza span {
+  display: block;
+  font-style: normal;
+  font-size: var(--tip-kucuk);
+  color: var(--renk-soluk);
+}
+
+/* ===========================================================================
+   9. ALT SATIR — tek sessiz satır
+   =========================================================================== */
+.alt {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: baseline;
+  gap: var(--bosluk-3);
+  padding: var(--bosluk-5) var(--kenar) var(--bosluk-4);
+  font-size: var(--tip-kucuk);
+  color: var(--renk-soluk);
+}
+.alt nav { justify-self: center; display: flex; gap: var(--bosluk-3); }
+.alt a { color: var(--renk-metin); }
+.alt .sag { justify-self: end; }
+
+/* ===========================================================================
+   10. GİRİŞ HAREKETİ — bölüm parçaları sırayla belirir
+   =========================================================================== */
+/* Parçalar yalnızca JavaScript çalışıyorsa gizlenir. Betik bir sebeple
+   çalışmazsa içerik görünür kalır, boş sayfa görünmez. Sınıfı JS ekler. */
+.js .beliren {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 560ms ease, transform 560ms ease;
+}
+.js .beliren.gorundu { opacity: 1; transform: none; }
+
+/* ===========================================================================
+   11. TELEFON VE TABLET
+   =========================================================================== */
+/* Telefonda açılan masal menüsü düğmesi — masaüstünde gizli */
+.menu-dugme { display: none; }
+
+@media (max-width: 960px) {
+  :root { --bosluk-7: 88px; --bosluk-6: 56px; }
+
+  /* Açılış tek kolona iner, çini alan üstte kısa bir panel olur */
+  .acilis { grid-template-columns: 1fr; min-height: 0; }
+  .acilis-saha { order: -1; height: 56svh; position: relative; }
+  .acilis-sayfa {
+    max-width: none;
+    margin: 0;
+    padding: var(--bosluk-5) var(--kenar) var(--bosluk-6);
+  }
+  .eylem { align-self: stretch; text-align: center; }
+
+  /* Masallar bölümü tek kolon; motif üstte bant olur */
+  .masallar-govde { grid-template-columns: 1fr; gap: var(--bosluk-4); }
+
+  /* Dar ekranda etiketler başlığın yanında değil altında dursun;
+     yan yana dururlarsa başlık üç dört satıra bölünüyor. */
+  .masal-dugme { grid-template-columns: 1fr; gap: 4px; }
+  .masal-dugme .satir-etiket { text-align: left; }
+  .motif-alan { position: relative; top: auto; aspect-ratio: 3 / 2; }
+  /* Kısa kutuda motif taşmasın: genişlik yerine yüksekliğe göre sığdır */
+  .motif-alan svg { width: auto; height: 58%; }
+
+  /* Okuma bölümü tek kolon; ray açılır menüye döner.
+     minmax(0,1fr): sütun içeriğin en dar hâlinden daha geniş olmaya zorlanmasın. */
+  .okuma { grid-template-columns: minmax(0, 1fr); gap: var(--bosluk-4); }
+  .ray { position: static; }
+  .menu-dugme {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 14px var(--bosluk-2);
+    margin-bottom: var(--bosluk-2);
+    background: var(--renk-zemin);
+    color: var(--renk-metin);
+    border: 2px solid var(--renk-metin);
+    border-radius: var(--kose);
+    font-size: var(--tip-orta);
+    cursor: pointer;
+  }
+  .ray-liste[data-acik="hayir"] { display: none; }
+  .ray h2 { display: none; }         /* başlık yerine düğme konuşuyor */
+
+  /* Üst çubuk: gezinme bağlantıları gizlenir, elmalar kalır */
+  .ust { grid-template-columns: 1fr auto; }
+  .ust-gezinme { display: none; }
+
+  .gezinme { grid-template-columns: 1fr; }
+  .alt { grid-template-columns: 1fr; gap: var(--bosluk-1); }
+  .alt nav { justify-self: start; flex-wrap: wrap; }
+  .alt .sag { justify-self: start; }
+}
+
+@media (max-width: 420px) {
+  :root { --kenar: 16px; }
+  #arama { width: 100%; }
+  .arama-kutu { width: 100%; flex-direction: column; align-items: stretch; gap: 6px; }
+  .elmalar svg { width: 66px; height: 24px; }
+  .saha-serit { flex-direction: column; gap: 4px; padding: var(--bosluk-2); }
+}
+
+/* Hareketi azaltmak isteyen kullanıcı için bütün geçişler kapanır */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; animation: none !important; }
+  .beliren { opacity: 1; transform: none; }
+}
