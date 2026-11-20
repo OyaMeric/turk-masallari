@@ -101,8 +101,9 @@ Kaynakların tam listesi ve lisans bilgileri: [`kaynaklar.md`](kaynaklar.md)
 
 ```
 /
-├── index.html              # tek dosya: HTML + <style> + <script>
-├── derle.py                # masallar/*.md dosyalarını index.html'e gömer
+├── index.html              # HTML sayfa yapısı
+├── style.css               # Harici CSS dosyası
+├── script.js               # Harici JavaScript dosyası
 ├── masallar/               # masal metinleri (10 dosya, künyeli)
 ├── gorsel-promptlari/      # sayfadaki her görselin tasarım yönergesi
 ├── README.md               # bu dosya
@@ -127,3 +128,22 @@ tasarım yönergesi `gorsel-promptlari/` klasöründe.
 ---
 
 **Derleyen:** Oya Meriç Alpay
+
+
+## External CSS ve JavaScript Yapılandırması
+
+Vize projesindeki tek HTML dosyasında yer alan CSS ve JavaScript kodları, harici dosyalara ayrılarak proje yeniden yapılandırılmıştır.
+
+### Dosya Yapısı
+
+- `index.html`: Sayfanın HTML yapısı ve içerik alanları.
+- `style.css`: Görsel tasarım, renkler, tipografi ve responsive düzenlemeler.
+- `script.js`: Masal verileri, arama, filtreleme, okuma ayarları, üç elmalı okuma ilerlemesi ve yer imi özellikleri.
+
+### Çalıştırma
+
+`index.html`, `style.css` ve `script.js` aynı klasörde tutulmalıdır. Projeyi çalıştırmak için `index.html` dosyasını tarayıcıda açmak yeterlidir. Ek kurulum gerektirmez.
+
+### Yapılan Değişiklik
+
+CSS ve JavaScript kodları harici dosyalara taşınmış; mevcut tasarım, masal metinleri ve kullanıcı etkileşimleri korunmuştur.
